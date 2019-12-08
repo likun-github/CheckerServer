@@ -1,0 +1,90 @@
+{
+    "Master":{
+        "Enable":false,
+        "MasterType":"Master",
+        "WebRoot":"/work/go/mqantserver/bin/console",
+        "WebHost":"0.0.0.0:8686",
+        "SSH":[
+
+        ],
+        "Process":[
+
+        ]
+    },
+	"Module":{
+        "Gate":[
+                {
+                    "Id":"Gate001",
+                    "ProcessID":"development",
+                    "Settings":{
+                        "WSAddr":      	 ":3653",
+                        "TCPAddr":     	 ":3563",
+                        "MaxMsgLen":     4096,
+                        "HTTPTimeout":   10,
+                        "MaxConnNum" :   20000,
+                        "Tls"        :   false,
+                        "CertFile"       :   "/opt/go/mqantserver/sslkey/h5link.pem",
+                        "KeyFile"        :   "/opt/go/mqantserver/sslkey/h5link.key",
+                        "MinHBStorage"  :   60
+                    }
+                }
+            ],
+        "Master":[
+                        {
+                            "Id":"Master001",
+                            "ProcessID":"development"
+                        }
+                ],
+        "HelloWorld":[
+          {
+            "Id":"HelloWorld001",
+            "ProcessID":"development"
+          }
+        ],
+        "Login":[
+                {
+                    "Id":"Login001",
+                    "ProcessID":"development"
+                }
+        ],
+        "Test":[
+                           {
+                                "Id":"Test001",
+                                "ProcessID":"development"
+                           }
+                       ],
+        "Webapp":[
+                        {
+                            "Id":"Webapp001",
+                            "ProcessID":"development",
+                            "Settings":{
+                                "StaticPath":"/Users/yt/go/src/mqantserver/bin"
+                            }
+                        }
+                ],
+        "Tracing":[
+                                {
+                                    "Id":"Tracing001",
+                                    "ProcessID":"development",
+                                    "Settings":{
+                                        "StoreFile":     "/tmp/appdash.gob",
+                                        "URL":     	 "http://localhost:7700",
+                                        "CollectorAddr":":7701",
+                                        "HTTPAddr":   ":7700"
+                                    }
+                                }
+
+                ]
+	},
+	"Mqtt":{
+        "WirteLoopChanNum": 10,
+        "ReadPackLoop": 1,
+        "ReadTimeout": 600,
+        "WriteTimeout": 300
+	},
+    "Rpc":{
+        "MaxCoroutine":10000,
+        "RpcExpired": 1,
+        "LogSuccess":false
+    }
+}
