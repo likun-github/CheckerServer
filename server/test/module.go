@@ -64,7 +64,7 @@ func (m *Test) login(session gate.Session, msg map[string]interface{}) (result s
 		test string
 	)
 	if passWord != "" {
-		stmt,e := database.Db.Prepare("select id,test from Test where id=?")
+		stmt,e := database.Db.Prepare("select id,name from User where id=?")
 
 		if e != nil {
 			log.Error(e.Error())

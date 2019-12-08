@@ -10,7 +10,7 @@ import (
 var Db *sql.DB
 
 func DbInit() bool {
-	db, err := sql.Open("mysql", "root:yutao1994.YT@tcp(127.0.0.1:3306)/JustForFun?charset=utf8")
+	db, err := sql.Open("mysql", "root:YUNding666@tcp(127.0.0.1:3306)/Test?charset=utf8")
 	if err != nil {
 		log.Error("can not open db")
 		return false
@@ -20,7 +20,7 @@ func DbInit() bool {
 	Db.SetMaxIdleConns(100)
 	Db.SetConnMaxLifetime(10 * time.Minute)
 	Db.Ping()
-	rows, err := Db.Query("select * from Test")
+	rows, err := Db.Query("select * from User")
 	if err != nil {
 		log.Error("db error")
 		return false
@@ -44,15 +44,14 @@ func DbInit() bool {
 		log.Info(fmt.Sprint(record))
 	}
 
-	stmt, _ := Db.Prepare("select id,createTime,test from Test where id=?")
+	stmt, _ := Db.Prepare("select id,name from User where id=?")
 	row := stmt.QueryRow(1)
 	var (
-		id         int64
-		createTime string
-		test       string
+                id         int64
+		name	   string
 	)
-	row.Scan(&id, &createTime, &test)
-	log.Info("id=%d, %s, %s", id, createTime, test)
+	row.Scan(&id, &name)
+	log.Info("id = %ld, name = %s", id, name)
 	defer stmt.Close()
 
 	defer rows.Close()
