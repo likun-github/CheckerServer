@@ -58,7 +58,7 @@
                             "Id":"Webapp001",
                             "ProcessID":"development",
                             "Settings":{
-                                "StaticPath":"/Users/yt/go/src/mqantserver/bin"
+                                "StaticPath":"/Users/yt/go/src/CheckerServer/bin"
                             }
                         }
                 ],

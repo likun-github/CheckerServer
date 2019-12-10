@@ -21,7 +21,7 @@ import (
 
 func main() {
 	this := new(work.MqttWork)
-	opts := this.GetDefaultOptions("ws://127.0.0.1:3653")
+	opts := this.GetDefaultOptions("ws://127.0.0.1:3654")
 	opts.SetConnectionLostHandler(func(client MQTT.Client, err error) {
 		fmt.Println("连接断开", err.Error())
 	})
@@ -34,7 +34,61 @@ func main() {
 	}
 
 	//访问HelloWorld001模块的HD_Say函数
-	msg, err := this.Request("Test/HD_TestLogin", []byte(`{"userName":"yt","passWord":"xxx","say":"我是梁大帅"}`))
+	//msg, err := this.Request("Test/HD_AddUser", []byte(`{"userName":"test","passWord":"xxx","age":26, "email:":"xxxx.com", "tel":151111111}`))
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//}
+	//fmt.Println(fmt.Sprintf("topic :%s  body :%s", msg.Topic(), string(msg.Payload())))
+	Request(this, "Test/HD_AddUser", []byte(`{"userName":"test","passWord":"xxx","age":26, "email":"xxxx.com", "tel":151111111}`))
+	fmt.Println("------------------------------")
+	Request(this, "Test/HD_AddUser", []byte(`{"userName":"test","passWord":"xxx","age":26, "email":"xxxx.com", "tel":151111111}`))
+	fmt.Println("------------------------------")
+	//Request(this, "Test/HD_AddUser", []byte(`{"passWord":"xxx","age":26, "email:":"xxxx.com", "tel":151111111}`))
+	//fmt.Println("------------------------------")
+	//Request(this, "Test/HD_AddUser", []byte(`{"userName":"test","age":26, "email:":"xxxx.com", "tel":151111111}`))
+	//fmt.Println("------------------------------")
+	//Request(this, "Test/HD_AddUser", []byte(`{"age":26, "email:":"xxxx.com", "tel":151111111}`))
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	Request(this, "Test/HD_Login", []byte(`{"userName":"test","passWord":"xxx"}`))
+	fmt.Println("------------------------------")
+	Request(this, "Test/HD_Login", []byte(`{"userName":"test","passWord":"xxxx"}`))
+	fmt.Println("------------------------------")
+	//Request(this, "Test/HD_Login", []byte(`{"passWord":"xxx"}`))
+	//fmt.Println("------------------------------")
+	//Request(this, "Test/HD_Login", []byte(`{"userName":"test"`))
+	//fmt.Println("------------------------------")
+	//Request(this, "Test/HD_Login", []byte(`{}`))
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	Request(this, "Test/HD_ModifyUser", []byte(`{"userName":"test","age":30}`))
+	fmt.Println("------------------------------")
+	Request(this, "Test/HD_ModifyUser", []byte(`{"userName":"test1","age":80}`))
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+
+	Request(this, "Test/HD_FindUserByName", []byte(`{"userName":"test"}`))
+	fmt.Println("------------------------------")
+	Request(this, "Test/HD_FindUserByName", []byte(`{"userName":"test1"}`))
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+
+	Request(this, "Test/HD_RemoveUser", []byte(`{"userName":"test"}`))
+	fmt.Println("------------------------------")
+	Request(this, "Test/HD_RemoveUser", []byte(`{"userName":"test1"}`))
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+
+
+
+
+}
+
+func Request(this*work.MqttWork, topic string, body[]byte) {
+	msg, err := this.Request(topic, body)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

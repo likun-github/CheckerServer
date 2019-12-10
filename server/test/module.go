@@ -1,9 +1,10 @@
 package test
 
 import (
-	"CheckerServer/server/database"
+	"CheckerServer/server/dao"
+	"CheckerServer/server/model"
 	"fmt"
-	_ "github.com/Go-SQL-Driver/MySQL"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/liangdas/mqant/conf"
 	"github.com/liangdas/mqant/gate"
 	"github.com/liangdas/mqant/log"
@@ -33,7 +34,11 @@ func (m *Test) Version() string {
 func (m *Test) OnInit(app module.App, settings *conf.ModuleSettings) {
 	m.BaseModule.OnInit(m, app, settings)
 
-	m.GetServer().RegisterGO("HD_TestLogin", m.login) //我们约定所有对客户端的请求都以Handler_开头
+	m.GetServer().RegisterGO("HD_Login", m.login) //我们约定所有对客户端的请求都以Handler_开头
+	m.GetServer().RegisterGO("HD_FindUserByName", m.findUserByName)
+	m.GetServer().RegisterGO("HD_AddUser", m.addUser)
+	m.GetServer().RegisterGO("HD_RemoveUser", m.removeUser)
+	m.GetServer().RegisterGO("HD_ModifyUser", m.modifyUser)
 	m.GetServer().RegisterGO("track", m.track)    //演示后台模块间的rpc调用
 	m.GetServer().RegisterGO("track2", m.track2)  //演示后台模块间的rpc调用
 	m.GetServer().RegisterGO("track3", m.track3)  //演示后台模块间的rpc调用
@@ -61,40 +66,19 @@ func (m *Test) login(session gate.Session, msg map[string]interface{}) (result s
 	passWord := msg["passWord"].(string)
 	var(
 		id int64
-		test string
+		name string
 	)
 	if passWord != "" {
-		stmt,e := database.Db.Prepare("select id,name from User where id=?")
-
-		if e != nil {
-			log.Error(e.Error())
-			result = "pass error"
-			return
-		}
-		row := stmt.QueryRow(1)
-		defer stmt.Close()
-		row.Scan(&id, &test)
+		//stmt,e := database.Db.Prepare("select id,name from User where id=?")
 		//
-		////scanArgs := make([]interface{}, len(columns))
-		////values := make([]interface{}, len(columns))
-		////for i := range values {
-		////	scanArgs[i] = &values[i]
-		////}
-		//var scanArg interface{}
-		//var value interface{}
-		//scanArg = &value
-
-			//将行数据保存到record字典
-			//err = row.Scan(scanArg)
-			//record := make(map[string]string)
-			//for i, col := range values {
-			//	if col != nil {
-			//		record[columns[i]] = string(col.([]byte))
-			//	}
-			//}
-			//log.Info(fmt.Sprint(record))
-
-
+		//if e != nil {
+		//	log.Error(e.Error())
+		//	result = "pass error"
+		//	return
+		//}
+		//row := stmt.QueryRow(1)
+		//defer stmt.Close()
+		//row.Scan(&id, &name)
 	}
 	err = session.Bind(userName)
 	if err != "" {
@@ -102,7 +86,133 @@ func (m *Test) login(session gate.Session, msg map[string]interface{}) (result s
 	}
 	session.Set("login", "true")
 	session.Push() //推送到网关
-	return fmt.Sprintf("login success %d, test = %s", id, test), ""
+	return fmt.Sprintf("login success %d, name = %s", id, name), ""
+}
+
+func (m *Test) findUserByName(session gate.Session, msg map[string]interface{}) (result string, err string){
+	if msg["userName"] == nil {
+		result = "userName cannot be nil"
+		return
+	}
+	userName := msg["userName"].(string)
+	//passWord := msg["passWord"].(string)
+	if userName != session.GetUserId() || session.Get("login") != "true" {
+		result = "user not login"
+		return
+	}
+	userDao:=dao.NewUserDao()
+	user := userDao.SelectUserByName(userName)
+	if user ==nil {
+		result = "invalid username"
+		return
+	}
+
+	log.Info("find user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	result = fmt.Sprintf("find user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	return
+}
+
+func (m *Test) addUser(session gate.Session, msg map[string]interface{}) (result string, err string){
+	if msg["userName"] == nil || msg["passWord"] == nil {
+		result = "userName or passWord cannot be nil"
+		return
+	}
+	userName := msg["userName"].(string)
+	passWord := msg["passWord"].(string)
+	userDao:=dao.NewUserDao()
+	user_ := userDao.SelectUserByName(userName)
+	if user_ != nil {
+		result = "userName exists"
+		return
+	}
+	user := new(model.User)
+	user.Name = userName
+	user.Password = passWord
+	if msg["age"] != nil {
+		user.Age = int8(msg["age"].(float64))
+	}
+	if msg["tel"]!=nil {
+		user.Tel = int64(msg["tel"].(float64))
+	}
+	if msg["email"] != nil {
+		user.Email = msg["email"].(string)
+	}
+
+	if !userDao.Insert(user) {
+		result = "db error"
+		return
+	}
+
+	log.Info("add user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	result = fmt.Sprintf("add user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	return
+}
+
+func (m *Test) modifyUser(session gate.Session, msg map[string]interface{}) (result string, err string){
+	if msg["userName"] == nil {
+		result = "userName cannot be nil"
+		return
+	}
+
+	userName := msg["userName"].(string)
+	if userName != session.GetUserId() || session.Get("login") != "true" {
+		result = "user not login"
+		return
+	}
+	//passWord := msg["passWord"].(string)
+	userDao:=dao.NewUserDao()
+	user := userDao.SelectUserByName(userName)
+	if user ==nil {
+		result = "invalid username"
+		return
+	}
+
+	if msg["age"] != nil {
+		user.Age = int8(msg["age"].(float64))
+	}
+	if msg["tel"]!=nil {
+		user.Tel = int64(msg["tel"].(float64))
+	}
+	if msg["email"] != nil {
+		user.Email = msg["email"].(string)
+	}
+
+	if !userDao.Update(user) {
+		result = "db error"
+		return
+	}
+
+	log.Info("modify user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	result = fmt.Sprintf("modify user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	return
+}
+
+func (m *Test) removeUser(session gate.Session, msg map[string]interface{}) (result string, err string){
+	if msg["userName"] == nil {
+		result = "userName cannot be nil"
+		return
+	}
+
+	userName := msg["userName"].(string)
+	if userName != session.GetUserId() || session.Get("login") != "true" {
+		result = "user not login"
+		return
+	}
+	userDao:=dao.NewUserDao()
+	user := userDao.SelectUserByName(userName)
+	if user ==nil {
+		result = "invalid username"
+		return
+	}
+
+	if !userDao.Delete(user) {
+		result = "db error"
+		return
+	}
+
+	log.Info("delete user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	result = fmt.Sprintf("delete user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	return
 }
 
 func (m *Test) track(session gate.Session) (result string, err string) {
