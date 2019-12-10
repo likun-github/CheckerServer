@@ -21,7 +21,7 @@ import (
 
 func main() {
 	this := new(work.MqttWork)
-	opts := this.GetDefaultOptions("ws://127.0.0.1:3654")
+	opts := this.GetDefaultOptions("ws://47.107.157.238:3654")
 	opts.SetConnectionLostHandler(func(client MQTT.Client, err error) {
 		fmt.Println("连接断开", err.Error())
 	})
@@ -53,7 +53,7 @@ func main() {
 	Request(this, "Test/HD_Login", []byte(`{"userName":"test","passWord":"xxx"}`))
 	fmt.Println("------------------------------")
 	Request(this, "Test/HD_Login", []byte(`{"userName":"test","passWord":"xxxx"}`))
-	fmt.Println("------------------------------")
+	//fmt.Println("------------------------------")
 	//Request(this, "Test/HD_Login", []byte(`{"passWord":"xxx"}`))
 	//fmt.Println("------------------------------")
 	//Request(this, "Test/HD_Login", []byte(`{"userName":"test"`))

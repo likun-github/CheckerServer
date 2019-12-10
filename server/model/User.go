@@ -6,7 +6,7 @@ type User struct {
 	Id int64
 	CreateTime time.Time `xorm:"created"`
 	LastModifyTime time.Time `xorm:"updated"`
-	DeleteTime time.Time `xorm:"deleted"`
+	//DeleteTime time.Time `xorm:"deleted"`
 	Name string `xorm:"varchar(25) unique notnull 'name'"`
 	Password string `xorm:"varchar(16) not null 'password'"`
 	Age int8 `xorm:"tinyint(3) 'age'"`

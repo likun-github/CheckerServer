@@ -64,21 +64,16 @@ func (m *Test) login(session gate.Session, msg map[string]interface{}) (result s
 	}
 	userName := msg["userName"].(string)
 	passWord := msg["passWord"].(string)
-	var(
-		id int64
-		name string
-	)
-	if passWord != "" {
-		//stmt,e := database.Db.Prepare("select id,name from User where id=?")
-		//
-		//if e != nil {
-		//	log.Error(e.Error())
-		//	result = "pass error"
-		//	return
-		//}
-		//row := stmt.QueryRow(1)
-		//defer stmt.Close()
-		//row.Scan(&id, &name)
+
+	userDao := dao.NewUserDao()
+	user := userDao.SelectUserByName(userName)
+	if user == nil {
+		result = "invalid user name"
+		return
+	}
+	if user.Password != passWord {
+		result = "invalid password"
+		return
 	}
 	err = session.Bind(userName)
 	if err != "" {
@@ -86,7 +81,7 @@ func (m *Test) login(session gate.Session, msg map[string]interface{}) (result s
 	}
 	session.Set("login", "true")
 	session.Push() //推送到网关
-	return fmt.Sprintf("login success %d, name = %s", id, name), ""
+	return fmt.Sprintf("login success %d, name = %s", user.Id, user.Name), ""
 }
 
 func (m *Test) findUserByName(session gate.Session, msg map[string]interface{}) (result string, err string){
