@@ -5,6 +5,7 @@ package webapp
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/liangdas/mqant/conf"
 	"github.com/liangdas/mqant/log"
@@ -51,14 +52,16 @@ func Statushandler(w http.ResponseWriter, r *http.Request) {
 }
 func (self *Web) Run(closeSig chan bool) {
 	//这里如果出现异常请检查8080端口是否已经被占用
-	l, err := net.Listen("tcp", ":80")
+	l, err := net.Listen("tcp", ":8081")
 	if err != nil {
 		log.Error("webapp server error", err.Error())
 		return
 	}
 	go func() {
-		log.Info("webapp server Listen : %s", ":80")
+		log.Info("webapp server Listen : %s", ":8081")
 		root := mux.NewRouter()
+		root.HandleFunc("/", HomeHandler);
+		root.HandleFunc("/login", LoginHandler);
 		status := root.PathPrefix("/status")
 		status.HandlerFunc(Statushandler)
 
@@ -72,6 +75,24 @@ func (self *Web) Run(closeSig chan bool) {
 	<-closeSig
 	log.Info("webapp server Shutting down...")
 	l.Close()
+}
+
+func LoginHandler(writer http.ResponseWriter, request *http.Request) {
+	vars := mux.Vars(request)
+	for k,_ := range vars {
+		log.Info(k)
+	}
+	writer.WriteHeader(http.StatusOK)
+	fmt.Fprintf(writer, "login")
+}
+
+func HomeHandler(writer http.ResponseWriter, request *http.Request) {
+	vars := mux.Vars(request)
+	for k,_ := range vars {
+		log.Info(k)
+	}
+	writer.WriteHeader(http.StatusOK)
+	fmt.Fprintf(writer, "wellcome to home")
 }
 
 func (self *Web) OnDestroy() {

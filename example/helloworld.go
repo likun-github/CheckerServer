@@ -22,7 +22,7 @@ import (
 
 func main() {
 	this := new(work.MqttWork)
-	opts := this.GetDefaultOptions("ws://47.107.157.238:3654")
+	opts := this.GetDefaultOptions("wss://www.yundingu.cn:8443")
 	opts.SetConnectionLostHandler(func(client MQTT.Client, err error) {
 		fmt.Println("连接断开", err.Error())
 	})
