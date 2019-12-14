@@ -51,13 +51,13 @@ func Statushandler(w http.ResponseWriter, r *http.Request) {
 }
 func (self *Web) Run(closeSig chan bool) {
 	//这里如果出现异常请检查8080端口是否已经被占用
-	l, err := net.Listen("tcp", ":8081")
+	l, err := net.Listen("tcp", ":80")
 	if err != nil {
 		log.Error("webapp server error", err.Error())
 		return
 	}
 	go func() {
-		log.Info("webapp server Listen : %s", ":8081")
+		log.Info("webapp server Listen : %s", ":80")
 		root := mux.NewRouter()
 		status := root.PathPrefix("/status")
 		status.HandlerFunc(Statushandler)
