@@ -62,8 +62,8 @@ func (self *Web) Run(closeSig chan bool) {
 		status := root.PathPrefix("/status")
 		status.HandlerFunc(Statushandler)
 
-		static := root.PathPrefix("/mqant/")
-		static.Handler(http.StripPrefix("/mqant/", http.FileServer(http.Dir(self.GetModuleSettings().Settings["StaticPath"].(string)))))
+		static := root.PathPrefix("/checkerserver/")
+		static.Handler(http.StripPrefix("/checkerserver/", http.FileServer(http.Dir(self.GetModuleSettings().Settings["StaticPath"].(string)))))
 		//r.Handle("/static",static)
 		ServeMux := http.NewServeMux()
 		ServeMux.Handle("/", root)

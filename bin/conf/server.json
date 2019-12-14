@@ -23,8 +23,8 @@
                         "HTTPTimeout":   10,
                         "MaxConnNum" :   20000,
                         "Tls"        :   false,
-                        "CertFile"       :   "/opt/go/mqantserver/sslkey/h5link.pem",
-                        "KeyFile"        :   "/opt/go/mqantserver/sslkey/h5link.key",
+                        "CertFile"       :   "bin/ssl/yundingu.cn.pem",
+                        "KeyFile"        :   "bin/ssl/yundingu.cn.key",
                         "MinHBStorage"  :   60
                     }
                 }
@@ -58,7 +58,7 @@
                             "Id":"Webapp001",
                             "ProcessID":"development",
                             "Settings":{
-                                "StaticPath":"/Users/yt/go/src/CheckerServer/bin"
+                                "StaticPath":"bin/static/"
                             }
                         }
                 ],

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/liangdas/armyant/work"
+	"time"
 )
 
 func main() {
@@ -83,7 +84,7 @@ func main() {
 	fmt.Println("------------------------------")
 
 
-
+	time.Sleep(2*time.Minute)
 
 }
 

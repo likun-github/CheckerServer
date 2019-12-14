@@ -17,7 +17,7 @@ var Engine *xorm.Engine
 
 func DbInit() bool {
 
-	engine, err := xorm.NewEngine("mysql", "root:YUNding666@tcp(127.0.0.1:3306)/Test?charset=utf8")
+	engine, err := xorm.NewEngine("mysql", "root:test666@tcp(127.0.0.1:3306)/Test?charset=utf8")
 	if err != nil {
 		log.Error("can not open db")
 		return false
@@ -45,7 +45,7 @@ func DbInit() bool {
 	engine.SetLogger(xorm.NewSimpleLogger(f))
 
 	log.Info("open db success")
-	err = engine.Sync2(new(model.User), new(model.Record))
+	err = engine.Sync2(new(model.User), new(model.Record), new(model.UserInfo))
 	if err!= nil {
 		log.Error(err.Error())
 		return false
