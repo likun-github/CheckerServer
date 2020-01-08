@@ -4,6 +4,7 @@
 package webapp
 
 import (
+	"CheckerServer/server/dao"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -11,8 +12,11 @@ import (
 	"github.com/liangdas/mqant/log"
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/base"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -62,6 +66,8 @@ func (self *Web) Run(closeSig chan bool) {
 		root := mux.NewRouter()
 		root.HandleFunc("/", HomeHandler);
 		root.HandleFunc("/login", LoginHandler);
+		root.HandleFunc("/getinfo",GetInfoHandler)
+		root.HandleFunc("/getuserid",GetUseridHandler)
 		status := root.PathPrefix("/status")
 		status.HandlerFunc(Statushandler)
 
@@ -84,6 +90,39 @@ func LoginHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 	writer.WriteHeader(http.StatusOK)
 	fmt.Fprintf(writer, "login")
+}
+
+func GetUseridHandler(writer http.ResponseWriter, request *http.Request) {
+	appsecret:="5ee539127cb87ad7294f491648bc401c"
+	appid:="wxa54181747176608d"
+	request.ParseForm() //解析参数，默认是不会解析的
+	code:=strings.Join(request.Form["code"], "")
+	url:="https://api.weixin.qq.com/sns/jscode2session?appid="+appid+"&secret="+appsecret+"&js_code="+code+"&grant_type=authorization_code"
+	resp, err := http.Get(url)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	s,err:=ioutil.ReadAll(resp.Body)
+	b :=string(s)
+	m := make(map[string]string)
+	json.Unmarshal([]byte(b), &m)
+	openid:=m["openid"]
+	infoDao:=dao.NewUserInfoDao()
+	userinfo:=infoDao.SelectByOpenid(openid)
+	fmt.Println("我就是喜欢乱写")
+	fmt.Println(userinfo.Id)
+	fmt.Fprintf(writer, " %s",openid)
+
+}
+func GetInfoHandler(writer http.ResponseWriter, request *http.Request)  {
+	query := request.URL.Query()
+	userId,_ := strconv.Atoi(query["userid"][0])
+	infoDao := dao.NewUserInfoDao()
+	userInfo := infoDao.SelectById(int64(userId))
+	writer.WriteHeader(http.StatusOK)
+	fmt.Fprintf(writer, "%s, %d",userInfo.Name, userInfo.Level)
+
 }
 
 func HomeHandler(writer http.ResponseWriter, request *http.Request) {

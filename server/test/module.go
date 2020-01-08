@@ -33,7 +33,6 @@ func (m *Test) Version() string {
 }
 func (m *Test) OnInit(app module.App, settings *conf.ModuleSettings) {
 	m.BaseModule.OnInit(m, app, settings)
-
 	m.GetServer().RegisterGO("HD_Login", m.login) //我们约定所有对客户端的请求都以Handler_开头
 	m.GetServer().RegisterGO("HD_FindUserByName", m.findUserByName)
 	m.GetServer().RegisterGO("HD_AddUser", m.addUser)
@@ -176,7 +175,7 @@ func (m *Test) modifyUser(session gate.Session, msg map[string]interface{}) (res
 		result = "db error"
 		return
 	}
-
+//session.se
 	log.Info("modify user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
 	result = fmt.Sprintf("modify user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
 	return

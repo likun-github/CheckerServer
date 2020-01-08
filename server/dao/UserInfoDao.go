@@ -12,6 +12,19 @@ type UserInfoDao struct {
 func NewUserInfoDao() (dao *UserInfoDao) {
 	return &UserInfoDao{Dao{Engine:database.Engine}}
 }
+func (this *UserInfoDao)SelectByOpenid(openid string)(user *model.UserInfo)  {
+	u:=new(model.UserInfo)
+	has, err := this.Engine.Where("userWXOpenID=?", openid).Get(u)
+	if err!=nil{
+		log.Error("select user openid=%s ", openid)
+		return nil
+	}
+	if !has {
+		log.Info("user openid = %s not exist", openid)
+		return nil
+	}
+	return u
+}
 func (this *UserInfoDao)SelectById(id int64) (user *model.UserInfo) {
 	u := new(model.UserInfo)
 	has, err := this.Engine.Id(id).Get(u)

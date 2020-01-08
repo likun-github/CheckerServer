@@ -24,21 +24,22 @@ import (
 
 
 func main() {
-
+	//监听地址，不大懂
 	go func() {
 		http.ListenAndServe("0.0.0.0:6060", nil)
 	}()
+	//相应配置
 	rs := registry.DefaultRegistry //etcdv3.NewRegistry()
 	nc, err := nats.Connect(nats.DefaultURL, nats.MaxReconnects(10000))
 	if err != nil {
 
 	}
-
+	//数据库初始化
 	if !database.DbInit() {
 		log.Info("Exiting")
 		return
 	}
-
+	//启动mqant
 	app := mqant.CreateApp(
 		module.Debug(true),//只有是在调试模式下才会在控制台打印日志, 非调试模式下只在日志文件中输出日志
 		module.Nats(nc),
@@ -70,6 +71,7 @@ func main() {
 		}
 	}))
 	//app.Route("Chat",ChatRoute)
+	//启动程序，接口命名
 	app.Run( //只有是在调试模式下才会在控制台打印日志, 非调试模式下只在日志文件中输出日志
 		modules.MasterModule(),
 		//hitball.Module(),
