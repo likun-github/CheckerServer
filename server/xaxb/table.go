@@ -20,10 +20,11 @@ import (
 	"github.com/liangdas/mqant/log"
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/modules/timer"
+	"CheckerServer/server/xaxb/objects"
 	"math/rand"
 	"sync"
 	"time"
-	"github.com/liangdas/mqantserver/server/xaxb/objects"
+
 )
 
 func init() {
