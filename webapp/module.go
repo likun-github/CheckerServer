@@ -5,6 +5,7 @@ package webapp
 
 import (
 	"CheckerServer/server/dao"
+	"CheckerServer/server/model"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -24,7 +25,16 @@ var Module = func() *Web {
 	web := new(Web)
 	return web
 }
+type UserInfoJson struct {
+	Id int64 `json:"userid"`//用户id
+	Name string `json:"name"`//用户真实姓名
+	WxName string `json:"nickname"`//微信昵称
+	WXImg string `json:"pic"`//头像
+	Status int8  `json:"status"`//用户状态，0代表仅获取openid,1代表获取基本用户信息
+	Score int64 `json:"score"`//分数
+	Level int8 `json:"level"`//关卡
 
+}
 type Web struct {
 	basemodule.BaseModule
 }
@@ -65,9 +75,12 @@ func (self *Web) Run(closeSig chan bool) {
 		log.Info("webapp server Listen : %s", ":8081")
 		root := mux.NewRouter()
 		root.HandleFunc("/", HomeHandler);
-		root.HandleFunc("/login", LoginHandler);
+		root.HandleFunc("/login", LoginHandler);//
+
+
 		root.HandleFunc("/getinfo",GetInfoHandler)
 		root.HandleFunc("/getuserid",GetUseridHandler)
+		root.HandleFunc("/register",RegisterHandler)
 		status := root.PathPrefix("/status")
 		status.HandlerFunc(Statushandler)
 
@@ -91,12 +104,13 @@ func LoginHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 	fmt.Fprintf(writer, "login")
 }
-
+//根据code获取用户id，没有的新建用户
 func GetUseridHandler(writer http.ResponseWriter, request *http.Request) {
 	appsecret:="5ee539127cb87ad7294f491648bc401c"
 	appid:="wxa54181747176608d"
 	request.ParseForm() //解析参数，默认是不会解析的
-	code:=strings.Join(request.Form["code"], "")
+	code:=strings.Join(request.Form["code"], "")//解析code
+
 	url:="https://api.weixin.qq.com/sns/jscode2session?appid="+appid+"&secret="+appsecret+"&js_code="+code+"&grant_type=authorization_code"
 	resp, err := http.Get(url)
 	if err != nil {
@@ -107,24 +121,63 @@ func GetUseridHandler(writer http.ResponseWriter, request *http.Request) {
 	b :=string(s)
 	m := make(map[string]string)
 	json.Unmarshal([]byte(b), &m)
-	openid:=m["openid"]
+	openid:=m["openid"]//从微信后台获取openid
+
 	infoDao:=dao.NewUserInfoDao()
-	userinfo:=infoDao.SelectByOpenid(openid)
-	fmt.Println("我就是喜欢乱写")
-	fmt.Println(userinfo.Id)
-	fmt.Fprintf(writer, " %s",openid)
+	userInfo:=infoDao.SelectByOpenid(openid)//在用户信息表中查询openid
+	//如果无此openid，新建用户
+	if userInfo==nil{
+		user := new(model.UserInfo)
+		user.WxOpenId=openid
+		user.Status=0
+		user.Level=1
+		if !infoDao.Insert(user) {
+			log.Info("db error")
+		}
+
+	}
+	//转json
+	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
+	j,_:=json.Marshal(u)
+	fmt.Fprintf(writer, string(j))
+
 
 }
+//根据用户id获取用户信息
 func GetInfoHandler(writer http.ResponseWriter, request *http.Request)  {
 	query := request.URL.Query()
 	userId,_ := strconv.Atoi(query["userid"][0])
 	infoDao := dao.NewUserInfoDao()
 	userInfo := infoDao.SelectById(int64(userId))
+	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
+	j,_:=json.Marshal(u)
 	writer.WriteHeader(http.StatusOK)
-	fmt.Fprintf(writer, "%s, %d",userInfo.Name, userInfo.Level)
+	fmt.Fprintf(writer, string(j))
+
+
 
 }
+//添加用户信息
+func RegisterHandler(writer http.ResponseWriter, request *http.Request) {
+	query := request.URL.Query()
+	userid,_:=strconv.Atoi(query["userid"][0])
+	pic:=query["pic"][0]
+	nickname:=query["nickname"][0]
+	infoDao:=dao.NewUserInfoDao()
+	userInfo := infoDao.SelectById(int64(userid))
+	userInfo.WXImg=pic
+	userInfo.WxName=nickname
+	userInfo.Status=1
+	if !infoDao.Update(userInfo){
+		log.Info("db error")
+	}
+	//转json
+	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
+	j,_:=json.Marshal(u)
+	fmt.Fprintf(writer, string(j))
 
+
+}
 func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	for k,_ := range vars {

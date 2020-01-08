@@ -61,6 +61,7 @@ func (m *Test) login(session gate.Session, msg map[string]interface{}) (result s
 		result = "userName or passWord cannot be nil"
 		return
 	}
+
 	userName := msg["userName"].(string)
 	passWord := msg["passWord"].(string)
 

@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	"github.com/liangdas/mqant/log"
 	"github.com/xormplus/xorm"
 )
@@ -10,6 +11,7 @@ type Dao struct {
 }
 
 func (this *Dao) Insert(m interface{}) bool{
+	fmt.Println("帮助找错误")
 	_, err :=this.Engine.InsertOne(m)
 	if err != nil {
 		log.Error("insert error: ",err.Error())

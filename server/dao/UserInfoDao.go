@@ -25,6 +25,7 @@ func (this *UserInfoDao)SelectByOpenid(openid string)(user *model.UserInfo)  {
 	}
 	return u
 }
+
 func (this *UserInfoDao)SelectById(id int64) (user *model.UserInfo) {
 	u := new(model.UserInfo)
 	has, err := this.Engine.Id(id).Get(u)
@@ -46,4 +47,23 @@ func (this *UserInfoDao)SelectAll() (users []model.UserInfo) {
 		log.Error("select all user error, %s", err.Error())
 	}
 	return
+}
+
+func (this *UserInfoDao)InsertUserInfo(users []model.UserInfo) bool{
+	session := this.Engine.NewSession()
+	err := session.Begin()
+	if err!= nil {
+		log.Error("begin session error, %s", err.Error())
+		return false
+	}
+	for _, user := range users {
+		_, err = session.InsertOne(user)
+		if err != nil {
+			_ = session.Rollback()
+			log.Error("insert user error, rollback. %s", err.Error())
+			return false
+		}
+	}
+	_ = session.Commit()
+	return true
 }

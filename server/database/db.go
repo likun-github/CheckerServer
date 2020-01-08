@@ -44,10 +44,9 @@ func DbInit() bool {
 		return false
 	}
 	engine.SetLogger(xorm.NewSimpleLogger(f))
-	log.Info("找到这个位置")
 	log.Info("open db success")
 	//数据表修改，如果有修改会自动更改
-	err = engine.Sync2(new(model.User), new(model.Record), new(model.UserInfo))
+	err = engine.Sync2(new(model.User), new(model.Record), new(model.UserInfo),new(model.Chess))
 	if err!= nil {
 		log.Error(err.Error())
 		return false
