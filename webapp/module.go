@@ -35,6 +35,15 @@ type UserInfoJson struct {
 	Level int8 `json:"level"`//关卡
 
 }
+type ChessJson struct {
+	Id int64 `json:"chessid"`//用户id
+	White int64 `json:"white"`//用户真实姓名
+	Black int64 `json:"black"`//微信昵称
+	King int64 `json:"king"`//头像
+
+
+}
+
 type Web struct {
 	basemodule.BaseModule
 }
@@ -81,6 +90,7 @@ func (self *Web) Run(closeSig chan bool) {
 		root.HandleFunc("/getinfo",GetInfoHandler)
 		root.HandleFunc("/getuserid",GetUseridHandler)
 		root.HandleFunc("/register",RegisterHandler)
+		root.HandleFunc("/ChessManual",ChessManualHandler)
 		status := root.PathPrefix("/status")
 		status.HandlerFunc(Statushandler)
 
@@ -179,6 +189,23 @@ func RegisterHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 	//转json
 	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
+	j,_:=json.Marshal(u)
+	fmt.Fprintf(writer, string(j))
+
+
+}
+
+
+//添加用户信息
+func ChessManualHandler(writer http.ResponseWriter, request *http.Request) {
+	query := request.URL.Query()
+	passid,_:=strconv.Atoi(query["passid"][0])
+	chessdao:=dao.NewChessManualDao()
+	chessinfo:=chessdao.SelectById(int64(passid))
+
+
+
+	u:=&ChessJson{Id:chessinfo.Id,White:chessinfo.White,Black:chessinfo.Black,King:chessinfo.King}
 	j,_:=json.Marshal(u)
 	fmt.Fprintf(writer, string(j))
 

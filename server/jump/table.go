@@ -1,7 +1,8 @@
 package jump
 
 import (
-"CheckerServer/server/xaxb/objects"
+	"CheckerServer/server/common/stack"
+	"CheckerServer/server/xaxb/objects"
 "container/list"
 "github.com/liangdas/mqant-modules/room"
 "github.com/liangdas/mqant/gate"
@@ -54,6 +55,7 @@ type Table struct {
 	step2                   int64 //押注期帧frame
 	step3                   int64 //开奖期帧frame
 	step4                   int64 //结算期帧frame
+	composition 			*stack.Stack
 }
 
 func NewTable(module module.RPCModule, tableId int) *Table {
@@ -64,6 +66,7 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 		current_id:    0,
 		current_frame: 0,
 		sync_frame:    0,
+		composition:stack.NewStack(),
 	}
 	this.BaseTableImpInit(tableId, this)
 	this.QueueInit()
@@ -122,7 +125,7 @@ func (this *Table) VerifyAccessAuthority(userId string, bigRoomId string) bool {
 func (this *Table) AllowJoin() bool {
 	this.writelock.Lock()
 	ready := true
-	if this.current_id > 2 {
+	if this.current_id == 1 {
 		this.writelock.Unlock()
 		return false
 	}

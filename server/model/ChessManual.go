@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type ChessMenu struct {
+type ChessManual struct {
 	Id int64
 	CreateTime time.Time `xorm:"created"`
 	LastModifyTime time.Time `xorm:"updated"`

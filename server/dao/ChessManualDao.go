@@ -5,14 +5,14 @@ import (
 	"github.com/liangdas/mqant/log"
 )
 
-type ChessMenuDao struct {
+type ChessManualDao struct {
 	Dao
 }
-func NewChessDao() (dao *ChessMenuDao) {
-	return &ChessMenuDao{Dao{Engine:database.Engine}}
+func NewChessManualDao() (dao *ChessManualDao) {
+	return &ChessManualDao{Dao{Engine:database.Engine}}
 }
-func (this *ChessMenuDao)SelectById(id int64) (user *model.ChessMenu) {
-	u := new(model.ChessMenu)
+func (this *ChessManualDao)SelectById(id int64) (user *model.ChessManual) {
+	u := new(model.ChessManual)
 	has, err := this.Engine.Id(id).Get(u)
 	if err!=nil{
 		log.Error("select user id=%d error", id)
@@ -24,8 +24,8 @@ func (this *ChessMenuDao)SelectById(id int64) (user *model.ChessMenu) {
 	}
 	return u
 }
-func (this *ChessMenuDao)SelectAll() (chesses []model.ChessMenu) {
-	chesses = make([]model.ChessMenu, 0)
+func (this *ChessManualDao)SelectAll() (chesses []model.ChessManual) {
+	chesses = make([]model.ChessManual, 0)
 	err := this.Engine.Find(&chesses)
 	if err != nil {
 		log.Error("select all chesses error, %s", err.Error())

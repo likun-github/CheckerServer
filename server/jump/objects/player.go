@@ -26,6 +26,7 @@ func NewPlayer(SeatIndex int) *Player {
 	this := new(Player)
 	this.SeatIndex = SeatIndex
 	this.BackNumber=3
+	this.Session().GetUserId()
 	//this.Coin = 1000
 	return this
 }

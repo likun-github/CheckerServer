@@ -14,6 +14,8 @@ type CMenu struct {
 //整个棋局
 type CMenus []*CMenu
 
+var MenuMap map[string]interface{}
+
 //新建一帧
 func NewMenu(number int,white int64,black int64,king int64)  *CMenu{
 	p:=&CMenu{}
