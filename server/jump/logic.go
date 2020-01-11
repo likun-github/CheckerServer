@@ -1,36 +1,33 @@
-// Copyright 2014 loolgame Author. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-package xaxb
+package jump
 
 import (
-	"CheckerServer/server/xaxb/objects"
-	"fmt"
-	"github.com/liangdas/mqant/utils"
-	"math"
+"CheckerServer/server/xaxb/objects"
+"fmt"
+"github.com/liangdas/mqant/utils"
+"math"
 )
 
 var (
+	MatchPeriod			  = FSMState("匹配等待期")
+	ControlPeriod 		  = FSMState("控制期")
+	WaitPeriod			  = FSMState("等待期")
+	SettlementPeriod	  = FSMState("结算期")
+	MatchPeriodEvent	  = FSMEvent("进入匹配等待期")
+	ControlPeriodEvent 	  = FSMEvent("进入控制期")
+	WaitPeriodEvent	      = FSMEvent("进入等待期")
+	SettlementPeriodEvent = FSMEvent("进入结算期")
+
+
 	VoidPeriod            = FSMState("空档期")
 	IdlePeriod            = FSMState("空闲期")
 	BettingPeriod         = FSMState("押注期")
 	OpeningPeriod         = FSMState("开奖期")
-	SettlementPeriod      = FSMState("结算期")
+	//SettlementPeriod      = FSMState("结算期")
 	VoidPeriodEvent       = FSMEvent("进入空档期")
 	IdlePeriodEvent       = FSMEvent("进入空闲期")
 	BettingPeriodEvent    = FSMEvent("进入押注期")
 	OpeningPeriodEvent    = FSMEvent("进入开奖期")
-	SettlementPeriodEvent = FSMEvent("进入结算期")
+	//SettlementPeriodEvent = FSMEvent("进入结算期")
 )
 
 func (this *Table) InitFsm() {

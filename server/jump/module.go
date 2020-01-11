@@ -1,3 +1,6 @@
+package jump
+
+
 // Copyright 2014 loolgame Author. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,53 +27,51 @@
 //哪个玩家猜中的数字与系统开出的数字最近就算赢,可以赢取所有玩家本局押注的金币*80%
 //玩家金币用完后将被踢出房间
 
-//src/robot 中是猜数字游戏机器人
-package xaxb
 
 import (
-	"errors"
-	"fmt"
-	"github.com/liangdas/mqant-modules/room"
-	"github.com/liangdas/mqant/conf"
-	"github.com/liangdas/mqant/gate"
-	"github.com/liangdas/mqant/module"
-	"github.com/liangdas/mqant/module/base"
-	"github.com/liangdas/mqant/server"
+"errors"
+"fmt"
+"github.com/liangdas/mqant-modules/room"
+"github.com/liangdas/mqant/conf"
+"github.com/liangdas/mqant/gate"
+"github.com/liangdas/mqant/module"
+"github.com/liangdas/mqant/module/base"
+"github.com/liangdas/mqant/server"
 )
 
 var Module = func() module.Module {
-	this := new(xaxb)
+	this := new(jump)
 	return this
 }
 
-type xaxb struct {
+type jump struct {
 	basemodule.BaseModule
 	room    *room.Room
 	proTime int64
 	gameId  int
 }
 
-func (self *xaxb) GetType() string {
+func (self *jump) GetType() string {
 	//很关键,需要与配置文件中的Module配置对应
 	return "XaXb"
 }
-func (self *xaxb) Version() string {
+func (self *jump) Version() string {
 	//可以在监控时了解代码版本
 	return "1.0.0"
 }
-func (self *xaxb) GetFullServerId() string {
+func (self *jump) GetFullServerId() string {
 	return self.GetServerId()
 }
 
-func (self *xaxb) usableTable(table room.BaseTable) bool {
+func (self *jump) usableTable(table room.BaseTable) bool {
 	return table.AllowJoin()
 }
 
-func (self *xaxb) newTable(module module.RPCModule, tableId int) (room.BaseTable, error) {
+func (self *jump) newTable(module module.RPCModule, tableId int) (room.BaseTable, error) {
 	table := NewTable(module, tableId)
 	return table, nil
 }
-func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
+func (self *jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 	self.BaseModule.OnInit(self, app, settings, server.Metadata(map[string]string{
 		"type": "helloworld",
 	}))
@@ -91,11 +92,11 @@ func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
 	})
 }
 
-func (self *xaxb) Run(closeSig chan bool) {
+func (self *jump) Run(closeSig chan bool) {
 
 }
 
-func (self *xaxb) OnDestroy() {
+func (self *jump) OnDestroy() {
 	//一定别忘了关闭RPC
 	self.GetServer().OnDestroy()
 }
@@ -103,7 +104,7 @@ func (self *xaxb) OnDestroy() {
 /**
 检查参数是否存在
 */
-func (self *xaxb) ParameterCheck(msg map[string]interface{}, paras ...string) error {
+func (self *jump) ParameterCheck(msg map[string]interface{}, paras ...string) error {
 	for _, v := range paras {
 		if _, ok := msg[v]; !ok {
 			return fmt.Errorf("No %s found", v)
@@ -115,7 +116,7 @@ func (self *xaxb) ParameterCheck(msg map[string]interface{}, paras ...string) er
 /**
 检查参数是否存在
 */
-func (self *xaxb) GetTableByBigRoomId(bigRoomId string) (*Table, error) {
+func (self *jump) GetTableByBigRoomId(bigRoomId string) (*Table, error) {
 	_, tableid, _, err := room.ParseBigRoomId(bigRoomId)
 	if err != nil {
 		return nil, err
@@ -132,14 +133,14 @@ func (self *xaxb) GetTableByBigRoomId(bigRoomId string) (*Table, error) {
 /**
 创建一个房间
 */
-func (self *xaxb) HDGetUsableTable(session gate.Session, msg map[string]interface{}) (map[string]interface{}, string) {
+func (self *jump) HDGetUsableTable(session gate.Session, msg map[string]interface{}) (map[string]interface{}, string) {
 	return self.getUsableTable(session)
 }
 
 /**
 创建一个房间
 */
-func (self *xaxb) getUsableTable(session gate.Session) (map[string]interface{}, string) {
+func (self *jump) getUsableTable(session gate.Session) (map[string]interface{}, string) {
 	//这个桌子分配逻辑还是不智能，如果空闲的桌子多了,人数少了不容易将他们分配到相同的桌子里面快速组局
 	table, err := self.room.GetUsableTable()
 	if err == nil {
@@ -153,7 +154,7 @@ func (self *xaxb) getUsableTable(session gate.Session) (map[string]interface{}, 
 	}
 }
 
-func (self *xaxb) enter(session gate.Session, msg map[string]interface{}) (string, string) {
+func (self *jump) enter(session gate.Session, msg map[string]interface{}) (string, string) {
 	if BigRoomId, ok := msg["BigRoomId"]; !ok {
 		return "", "No BigRoomId found"
 	} else {
@@ -196,7 +197,7 @@ func (self *xaxb) enter(session gate.Session, msg map[string]interface{}) (strin
 
 }
 
-func (self *xaxb) exit(session gate.Session, msg map[string]interface{}) (string, string) {
+func (self *jump) exit(session gate.Session, msg map[string]interface{}) (string, string) {
 	if BigRoomId, ok := msg["BigRoomId"]; !ok {
 		return "", "No BigRoomId found"
 	} else {
@@ -217,7 +218,7 @@ func (self *xaxb) exit(session gate.Session, msg map[string]interface{}) (string
 
 }
 
-func (self *xaxb) sitdown(session gate.Session, msg map[string]interface{}) (string, string) {
+func (self *jump) sitdown(session gate.Session, msg map[string]interface{}) (string, string) {
 	bigRoomId := session.Get("BigRoomId")
 	if bigRoomId == "" {
 		return "", "fail"
@@ -232,7 +233,7 @@ func (self *xaxb) sitdown(session gate.Session, msg map[string]interface{}) (str
 	}
 	return "success", ""
 }
-func (self *xaxb) startGame(session gate.Session, msg map[string]interface{}) (string, string) {
+func (self *jump) startGame(session gate.Session, msg map[string]interface{}) (string, string) {
 	bigRoomId := session.Get("BigRoomId")
 	if bigRoomId == "" {
 		return "", "fail"
@@ -247,7 +248,7 @@ func (self *xaxb) startGame(session gate.Session, msg map[string]interface{}) (s
 	}
 	return "success", ""
 }
-func (self *xaxb) pauseGame(session gate.Session, msg map[string]interface{}) (string, string) {
+func (self *jump) pauseGame(session gate.Session, msg map[string]interface{}) (string, string) {
 	bigRoomId := session.Get("BigRoomId")
 	if bigRoomId == "" {
 		return "", "fail"
@@ -263,7 +264,7 @@ func (self *xaxb) pauseGame(session gate.Session, msg map[string]interface{}) (s
 	return "success", ""
 }
 
-func (self *xaxb) stake(session gate.Session, msg map[string]interface{}) (string, string) {
+func (self *jump) stake(session gate.Session, msg map[string]interface{}) (string, string) {
 	if Target, ok := msg["Target"]; !ok {
 		return "", "No Target found"
 	} else {
@@ -282,3 +283,4 @@ func (self *xaxb) stake(session gate.Session, msg map[string]interface{}) (strin
 		return "success", ""
 	}
 }
+

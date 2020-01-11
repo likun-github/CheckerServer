@@ -66,7 +66,7 @@ func (this *CustomAgent) WriteMsg(topic string, body []byte) error {
 	//this.w.Write()
 	return nil
 }
-
+//生成session,session为客户端唯一身份标识
 func (this *CustomAgent) Run() (err error) {
 	log.Info("CustomAgent", "开始读数据了")
 

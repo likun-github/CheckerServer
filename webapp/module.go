@@ -134,12 +134,18 @@ func GetUseridHandler(writer http.ResponseWriter, request *http.Request) {
 		if !infoDao.Insert(user) {
 			log.Info("db error")
 		}
+		u:=&UserInfoJson{Id:user.Id,Name:user.Name,WxName:user.WxName,WXImg:user.WXImg,Status:user.Status,Score:user.Score,Level:user.Level}
+		j,_:=json.Marshal(u)
+		fmt.Fprintf(writer, string(j))
+
+	}else {
+		//转json
+		u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
+		j,_:=json.Marshal(u)
+		fmt.Fprintf(writer, string(j))
 
 	}
-	//转json
-	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
-	j,_:=json.Marshal(u)
-	fmt.Fprintf(writer, string(j))
+
 
 
 }

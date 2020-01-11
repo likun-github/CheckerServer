@@ -2,7 +2,6 @@ package test
 
 import (
 	"CheckerServer/server/dao"
-	"CheckerServer/server/model"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/liangdas/mqant/conf"
@@ -106,41 +105,50 @@ func (m *Test) findUserByName(session gate.Session, msg map[string]interface{}) 
 	result = fmt.Sprintf("find user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
 	return
 }
-
+//session是客户端在服务器唯一身份标识
 func (m *Test) addUser(session gate.Session, msg map[string]interface{}) (result string, err string){
 	if msg["userName"] == nil || msg["passWord"] == nil {
 		result = "userName or passWord cannot be nil"
 		return
 	}
 	userName := msg["userName"].(string)
-	passWord := msg["passWord"].(string)
-	userDao:=dao.NewUserDao()
-	user_ := userDao.SelectUserByName(userName)
-	if user_ != nil {
-		result = "userName exists"
+	//passWord := msg["passWord"].(string)
+	//userDao:=dao.NewUserDao()
+	//user_ := userDao.SelectUserByName(userName)
+	err=session.Bind(userName)
+	if err!=" "{
 		return
 	}
-	user := new(model.User)
-	user.Name = userName
-	user.Password = passWord
-	if msg["age"] != nil {
-		user.Age = int8(msg["age"].(float64))
-	}
-	if msg["tel"]!=nil {
-		user.Tel = int64(msg["tel"].(float64))
-	}
-	if msg["email"] != nil {
-		user.Email = msg["email"].(string)
-	}
-
-	if !userDao.Insert(user) {
-		result = "db error"
-		return
-	}
-
-	log.Info("add user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
-	result = fmt.Sprintf("add user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
-	return
+	session.Set("login","true")
+	session.Push()//推送到网关
+	return fmt.Sprintf("login success %s", userName), ""
+	//fmt.Println("我这里是方便找位置")
+	//if user_ != nil {
+	//	result = "userName exists"
+	//	fmt.Println("卡位")
+	//	return fmt.Sprintf("login success %s", userName), ""
+	//}
+	//user := new(model.User)
+	//user.Name = userName
+	//user.Password = passWord
+	//if msg["age"] != nil {
+	//	user.Age = int8(msg["age"].(float64))
+	//}
+	//if msg["tel"]!=nil {
+	//	user.Tel = int64(msg["tel"].(float64))
+	//}
+	//if msg["email"] != nil {
+	//	user.Email = msg["email"].(string)
+	//}
+	//
+	//if !userDao.Insert(user) {
+	//	result = "db error"
+	//	return
+	//}
+	//
+	//log.Info("add user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	//result = fmt.Sprintf("add user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
+	//return
 }
 
 func (m *Test) modifyUser(session gate.Session, msg map[string]interface{}) (result string, err string){

@@ -4,14 +4,12 @@
 package login
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/liangdas/mqant/conf"
 	"github.com/liangdas/mqant/gate"
-	"github.com/liangdas/mqant/log"
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/base"
-	"math/rand"
-	"time"
 )
 
 var Module = func() module.Module {
@@ -33,11 +31,7 @@ func (m *Login) Version() string {
 }
 func (m *Login) OnInit(app module.App, settings *conf.ModuleSettings) {
 	m.BaseModule.OnInit(m, app, settings)
-
 	m.GetServer().RegisterGO("HD_Login", m.login) //我们约定所有对客户端的请求都以Handler_开头
-	m.GetServer().RegisterGO("track", m.track)    //演示后台模块间的rpc调用
-	m.GetServer().RegisterGO("track2", m.track2)  //演示后台模块间的rpc调用
-	m.GetServer().RegisterGO("track3", m.track3)  //演示后台模块间的rpc调用
 	m.GetServer().Register("HD_Robot", m.robot)
 	m.GetServer().RegisterGO("HD_Robot_GO", m.robot) //我们约定所有对客户端的请求都以Handler_开头
 }
@@ -51,6 +45,8 @@ func (m *Login) OnDestroy() {
 }
 func (m *Login) robot(session gate.Session, msg map[string]interface{}) (result string, err string) {
 	//time.Sleep(1)
+
+	fmt.Println("真的吗，就是简单的试一下")
 	return "sss", ""
 }
 func (m *Login) login(session gate.Session, msg map[string]interface{}) (result string, err string) {
@@ -60,6 +56,13 @@ func (m *Login) login(session gate.Session, msg map[string]interface{}) (result 
 	}
 	userName := msg["userName"].(string)
 	err = session.Bind(userName)
+	// 直接创建1
+	m2 := make(map[string]string)
+	// 然后赋值
+	m2["a"] = "就是简单的尝试"
+	m2["b"] = "bb"
+	j,_:=json.Marshal(m2)
+	session.Send("try",j)
 	if err != "" {
 		return
 	}
@@ -68,28 +71,3 @@ func (m *Login) login(session gate.Session, msg map[string]interface{}) (result 
 	return fmt.Sprintf("login success %s", userName), ""
 }
 
-func (m *Login) track(session gate.Session) (result string, err string) {
-	//演示后台模块间的rpc调用
-	time.Sleep(time.Millisecond * 10)
-	log.TInfo(session, "Login %v", "track1")
-	m.RpcInvoke("Login", "track2", session)
-	return fmt.Sprintf("My is Login Module %s"), ""
-}
-
-func (m *Login) track2(session gate.Session) (result string, err string) {
-	//演示后台模块间的rpc调用
-	time.Sleep(time.Millisecond * 10)
-	log.TInfo(session, "Login %v", "track2")
-	r := rand.Intn(100)
-	if r > 30 {
-		m.RpcInvoke("Login", "track3", session)
-	}
-
-	return fmt.Sprintf("My is Login Module"), ""
-}
-func (m *Login) track3(session gate.Session) (result string, err string) {
-	//演示后台模块间的rpc调用
-	time.Sleep(time.Millisecond * 10)
-	log.TInfo(session, "Login %v", "track3")
-	return fmt.Sprintf("My is Login Module"), ""
-}
