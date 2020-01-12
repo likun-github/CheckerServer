@@ -33,7 +33,6 @@ import (
 	"github.com/liangdas/mqant-modules/room"
 	"github.com/liangdas/mqant/conf"
 	"github.com/liangdas/mqant/gate"
-	"github.com/liangdas/mqant/log"
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/base"
 	"github.com/liangdas/mqant/server"
@@ -51,37 +50,28 @@ type xaxb struct {
 	gameId  int
 }
 
-// 返回模塊名？
 func (self *xaxb) GetType() string {
 	//很关键,需要与配置文件中的Module配置对应
 	return "XaXb"
 }
-
-// 返回版本號？
 func (self *xaxb) Version() string {
 	//可以在监控时了解代码版本
 	return "1.0.0"
 }
-
-// 服務器的id？處理多個服務器？
 func (self *xaxb) GetFullServerId() string {
 	return self.GetServerId()
 }
 
-// 給個table，判斷能不能加入？什麼是baseTable？
 func (self *xaxb) usableTable(table room.BaseTable) bool {
 	return table.AllowJoin()
 }
 
-// 根據模塊與id創建table？為什麼順序這麼奇怪，為什麼要通過模塊，為什麼現有tableid？
 func (self *xaxb) newTable(module module.RPCModule, tableId int) (room.BaseTable, error) {
 	table := NewTable(module, tableId)
 	return table, nil
 }
-
-// 一切的開始，開始初始化，新建房間，並註冊各個請求的處理函數
 func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
-	fmt.Println("初始化xaxb")
+
 	self.BaseModule.OnInit(self, app, settings, server.Metadata(map[string]string{
 		"type": "helloworld",
 	}))
@@ -89,7 +79,6 @@ func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
 	self.gameId = 13
 	self.room = room.NewRoom(self, self.gameId, self.newTable, self.usableTable)
 	self.GetServer().RegisterGO("GetUsableTable", self.getUsableTable)
-	self.GetServer().RegisterGO("HD_Login", self.login)
 	self.GetServer().RegisterGO("HD_GetUsableTable", self.HDGetUsableTable)
 	self.GetServer().RegisterGO("HD_Enter", self.enter)
 	self.GetServer().RegisterGO("HD_Exit", self.exit)
@@ -98,7 +87,7 @@ func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
 	self.GetServer().RegisterGO("HD_PauseGame", self.pauseGame)
 	self.GetServer().RegisterGO("HD_Stake", self.stake)
 	self.GetServer().RegisterGO("HD_Hello", func(session gate.Session, msg map[string]interface{}) (string, string) {
-		log.Info("HD_Hello")
+		//log.Info("HD_Hello")
 		return "success", ""
 	})
 }
@@ -112,10 +101,23 @@ func (self *xaxb) OnDestroy() {
 	self.GetServer().OnDestroy()
 }
 
-func (self *xaxb) login(session gate.Session, msg map[string]interface{}) (result string, err string) {
-	fmt.Println("试一试是否可以运行")
-	return
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
 检查参数是否存在
@@ -240,6 +242,7 @@ func (self *xaxb) exit(session gate.Session, msg map[string]interface{}) (string
 		}
 		return "", err.Error()
 	}
+
 }
 
 func (self *xaxb) sitdown(session gate.Session, msg map[string]interface{}) (string, string) {
@@ -257,7 +260,6 @@ func (self *xaxb) sitdown(session gate.Session, msg map[string]interface{}) (str
 	}
 	return "success", ""
 }
-
 func (self *xaxb) startGame(session gate.Session, msg map[string]interface{}) (string, string) {
 	bigRoomId := session.Get("BigRoomId")
 	if bigRoomId == "" {
@@ -273,7 +275,6 @@ func (self *xaxb) startGame(session gate.Session, msg map[string]interface{}) (s
 	}
 	return "success", ""
 }
-
 func (self *xaxb) pauseGame(session gate.Session, msg map[string]interface{}) (string, string) {
 	bigRoomId := session.Get("BigRoomId")
 	if bigRoomId == "" {

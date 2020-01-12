@@ -10,29 +10,23 @@ type Player struct {
 	Time       int//计时10min,600s
 
 	Controller bool //是否为控制方
-	WithdrawNumber int //悔棋次数
+	BackNumber int //悔棋次数
 	Score      int //分数
 
 
 
-	//Coin       int //金币数量
-	//timeToMove int64
-	//Target     int64 //押注目标
-	//Stake      bool  //是否已押注
-	//Weight     int64 //计算后权重
+
 }
 
 func NewPlayer(SeatIndex int) *Player {
 	this := new(Player)
 	this.SeatIndex = SeatIndex
-	this.WithdrawNumber=3
-	this.Session().GetUserId()
-	//this.Coin = 1000
+	this.BackNumber=3
 	return this
 }
-
 //map转json
 func (this *Player) Serializable() ([]byte, error) {
+
 	return json.Marshal(this.SerializableMap())
 }
 
