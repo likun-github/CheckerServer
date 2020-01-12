@@ -31,6 +31,7 @@ func (m *Test) Version() string {
 	return "1.0.0"
 }
 func (m *Test) OnInit(app module.App, settings *conf.ModuleSettings) {
+	fmt.Println("初始化test")
 	m.BaseModule.OnInit(m, app, settings)
 	m.GetServer().RegisterGO("HD_Login", m.login) //我们约定所有对客户端的请求都以Handler_开头
 	m.GetServer().RegisterGO("HD_FindUserByName", m.findUserByName)
@@ -56,31 +57,33 @@ func (m *Test) robot(session gate.Session, msg map[string]interface{}) (result s
 	return "sss", ""
 }
 func (m *Test) login(session gate.Session, msg map[string]interface{}) (result string, err string) {
-	if msg["userName"] == nil || msg["passWord"] == nil {
-		result = "userName or passWord cannot be nil"
-		return
-	}
-
-	userName := msg["userName"].(string)
-	passWord := msg["passWord"].(string)
-
-	userDao := dao.NewUserDao()
-	user := userDao.SelectUserByName(userName)
-	if user == nil {
-		result = "invalid user name"
-		return
-	}
-	if user.Password != passWord {
-		result = "invalid password"
-		return
-	}
-	err = session.Bind(userName)
-	if err != "" {
-		return
-	}
-	session.Set("login", "true")
-	session.Push() //推送到网关
-	return fmt.Sprintf("login success %d, name = %s", user.Id, user.Name), ""
+	fmt.Println("test login")
+	return
+	//if msg["userName"] == nil || msg["passWord"] == nil {
+	//	result = "userName or passWord cannot be nil"
+	//	return
+	//}
+	//
+	//userName := msg["userName"].(string)
+	//passWord := msg["passWord"].(string)
+	//
+	//userDao := dao.NewUserDao()
+	//user := userDao.SelectUserByName(userName)
+	//if user == nil {
+	//	result = "invalid user name"
+	//	return
+	//}
+	//if user.Password != passWord {
+	//	result = "invalid password"
+	//	return
+	//}
+	//err = session.Bind(userName)
+	//if err != "" {
+	//	return
+	//}
+	//session.Set("login", "true")
+	//session.Push() //推送到网关
+	//return fmt.Sprintf("login success %d, name = %s", user.Id, user.Name), ""
 }
 
 func (m *Test) findUserByName(session gate.Session, msg map[string]interface{}) (result string, err string){
@@ -107,21 +110,22 @@ func (m *Test) findUserByName(session gate.Session, msg map[string]interface{}) 
 }
 //session是客户端在服务器唯一身份标识
 func (m *Test) addUser(session gate.Session, msg map[string]interface{}) (result string, err string){
-	if msg["userName"] == nil || msg["passWord"] == nil {
-		result = "userName or passWord cannot be nil"
-		return
-	}
-	userName := msg["userName"].(string)
-	//passWord := msg["passWord"].(string)
-	//userDao:=dao.NewUserDao()
-	//user_ := userDao.SelectUserByName(userName)
-	err=session.Bind(userName)
-	if err!=" "{
-		return
-	}
-	session.Set("login","true")
-	session.Push()//推送到网关
-	return fmt.Sprintf("login success %s", userName), ""
+	fmt.Println("看一看test里面是不是好的")
+	//if msg["userName"] == nil || msg["passWord"] == nil {
+	//	result = "userName or passWord cannot be nil"
+	//	return
+	//}
+	//userName := msg["userName"].(string)
+	////passWord := msg["passWord"].(string)
+	////userDao:=dao.NewUserDao()
+	////user_ := userDao.SelectUserByName(userName)
+	//err=session.Bind(userName)
+	//if err!=" "{
+	//	return
+	//}
+	//session.Set("login","true")
+	//session.Push()//推送到网关
+	//return fmt.Sprintf("login success %s", userName), ""
 	//fmt.Println("我这里是方便找位置")
 	//if user_ != nil {
 	//	result = "userName exists"
@@ -149,6 +153,7 @@ func (m *Test) addUser(session gate.Session, msg map[string]interface{}) (result
 	//log.Info("add user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
 	//result = fmt.Sprintf("add user: id=%d, name=%s, age=%d, tel=%d, email=%s", user.Id, user.Name, user.Age, user.Tel, user.Email)
 	//return
+	return
 }
 
 func (m *Test) modifyUser(session gate.Session, msg map[string]interface{}) (result string, err string){

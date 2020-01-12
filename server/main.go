@@ -6,6 +6,7 @@ import (
 	"CheckerServer/server/helloworld"
 	"CheckerServer/server/login"
 	"CheckerServer/server/test"
+	"CheckerServer/server/xaxb"
 	"CheckerServer/webapp"
 	"github.com/liangdas/mqant"
 	"github.com/liangdas/mqant/module/modules"
@@ -78,10 +79,12 @@ func main() {
 		mgate.Module(), //这是默认网关模块,是必须的支持 TCP,websocket,MQTT协议
 		helloworld.Module(),
 		login.Module(), //这是用户登录验证模块
+
+		//jump.Module(),//跳棋模块
 		//chat.Module(),
 		//user.Module(),
 		webapp.Module(),
-		//xaxb.Module(),
+		xaxb.Module(),
 		test.Module(),
 		//tracing.Module(), //很多初学者不会改文件路径，先移除了
 	) //这是聊天模块

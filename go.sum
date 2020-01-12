@@ -117,6 +117,7 @@ github.com/liangdas/armyant v0.0.0-20181120080818-50ccc5936868/go.mod h1:AgpkN9L
 github.com/liangdas/mqant v1.0.0/go.mod h1:4/pu3k0bBggF0ljMP/ONGXXJrXyunNfJGmR2iLCyKLE=
 github.com/liangdas/mqant v1.1.4 h1:AjUowXGqXCdoYXjIBzRI4SWce1/yVcSFGMpRnLnYfQ8=
 github.com/liangdas/mqant v1.1.4/go.mod h1:4/fSJqKJ/Ez/L9oaTi2TrJciqXgVcvBFhs0sd4REgW4=
+github.com/liangdas/mqant-modules v1.1.2 h1:ltF43frYG6Y17eg1LrLdTp7rql/WuJhNsxNapMQl+x8=
 github.com/liangdas/mqant-modules v1.1.2/go.mod h1:Ddv4jsfXD6I3E7F4iHBnvnImv7oKp0FfgLjalBRwrME=
 github.com/liangdas/mqantserver v0.0.0-20191122101038-fab0ac665a0c/go.mod h1:zlSpwZcr2rdh+GpCzOgXsfkipvgCtywCfSwQce1XJpg=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
@@ -193,6 +194,7 @@ github.com/xormplus/core v0.0.0-20190724072625-00f5a85ad6e0 h1:vqleyrxQwTNEr+jlW
 github.com/xormplus/core v0.0.0-20190724072625-00f5a85ad6e0/go.mod h1:V3p6iAR/MaICgU6GJqxGQxspfljTyfOTv4Czz0B5atU=
 github.com/xormplus/xorm v0.0.0-20190926190243-42377f593eb1 h1:aAOoM0H2aCXMrbD29iHSQL8zjQDDCFLisrgVBI5zZVY=
 github.com/xormplus/xorm v0.0.0-20190926190243-42377f593eb1/go.mod h1:+v6b10b4x5IcQmp1/Cbo9IqaknxVeuhQng+fhya6bdI=
+github.com/yireyun/go-queue v0.0.0-20180809062148-5e6897360dac h1:a4krU0HaACgZ1ai3epUH6U6Kji7WHiucldhzWv6oD2o=
 github.com/yireyun/go-queue v0.0.0-20180809062148-5e6897360dac/go.mod h1:NS8O3p7NiPwC1Yw9xTd9DnDBguxFJG/BL1VPTSfJ5Gw=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/etcd v3.3.15+incompatible/go.mod h1:yaeTdrJi5lOmYerz05bd8+V7KubZs8YSFZfzsF9A6aI=

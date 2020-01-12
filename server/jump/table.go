@@ -41,16 +41,18 @@ type Table struct {
 	seats                   []*objects.Player
 	viewer                  *list.List //观众
 	seatMax                 int        //房间最大座位数
-	current_id              int64
+	current_id              int64		//当前房间人数
 	current_frame           int64 //当前帧
 	sync_frame              int64 //上一次同步数据的帧
 	stoped                  bool
 	writelock               sync.Mutex
-	VoidPeriodHandler       FSMHandler
-	IdlePeriodHandler       FSMHandler
-	BettingPeriodHandler    FSMHandler
-	OpeningPeriodHandler    FSMHandler
-	SettlementPeriodHandler FSMHandler
+	MatchPeriodHandler       FSMHandler
+	ControlPeriodHandler     FSMHandler
+	WithdrawPeriodHandler    FSMHandler
+	LosePeriodHandler        FSMHandler
+	PlayDraughtHandler       FSMHandler
+	SettlementPeriodHandler  FSMHandler
+	step   					int64 //悔棋期帧
 	step1                   int64 //空档期帧frame
 	step2                   int64 //押注期帧frame
 	step3                   int64 //开奖期帧frame

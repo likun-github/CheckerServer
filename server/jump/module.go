@@ -148,6 +148,8 @@ func (self *jump) getUsableTable(session gate.Session) (map[string]interface{}, 
 		tableInfo := map[string]interface{}{
 			"BigRoomId": room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId()),
 		}
+		fmt.Println("看一看table")
+		fmt.Println(tableInfo)
 		return tableInfo, ""
 	} else {
 		return nil, "There is no available table"

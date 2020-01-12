@@ -71,6 +71,7 @@ func (self *xaxb) newTable(module module.RPCModule, tableId int) (room.BaseTable
 	return table, nil
 }
 func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
+	fmt.Println("初始化xaxb")
 	self.BaseModule.OnInit(self, app, settings, server.Metadata(map[string]string{
 		"type": "helloworld",
 	}))
@@ -78,6 +79,7 @@ func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
 	self.gameId = 13
 	self.room = room.NewRoom(self, self.gameId, self.newTable, self.usableTable)
 	self.GetServer().RegisterGO("GetUsableTable", self.getUsableTable)
+	self.GetServer().RegisterGO("HD_Login", self.login)
 	self.GetServer().RegisterGO("HD_GetUsableTable", self.HDGetUsableTable)
 	self.GetServer().RegisterGO("HD_Enter", self.enter)
 	self.GetServer().RegisterGO("HD_Exit", self.exit)
@@ -99,6 +101,28 @@ func (self *xaxb) OnDestroy() {
 	//一定别忘了关闭RPC
 	self.GetServer().OnDestroy()
 }
+
+
+
+
+func (self *xaxb) login(session gate.Session, msg map[string]interface{}) (result string, err string) {
+	fmt.Println("试一试是否可以运行")
+	return
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
 检查参数是否存在
@@ -132,21 +156,29 @@ func (self *xaxb) GetTableByBigRoomId(bigRoomId string) (*Table, error) {
 /**
 创建一个房间
 */
+
 func (self *xaxb) HDGetUsableTable(session gate.Session, msg map[string]interface{}) (map[string]interface{}, string) {
+	fmt.Println("看看hd")
 	return self.getUsableTable(session)
 }
 
 /**
 创建一个房间
 */
+
 func (self *xaxb) getUsableTable(session gate.Session) (map[string]interface{}, string) {
+	fmt.Println("运行了吗")
 	//这个桌子分配逻辑还是不智能，如果空闲的桌子多了,人数少了不容易将他们分配到相同的桌子里面快速组局
 	table, err := self.room.GetUsableTable()
+
+	fmt.Println("看看桌子")
+
 	if err == nil {
 		table.Create()
 		tableInfo := map[string]interface{}{
 			"BigRoomId": room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId()),
 		}
+		fmt.Println(tableInfo)
 		return tableInfo, ""
 	} else {
 		return nil, "There is no available table"
@@ -154,6 +186,7 @@ func (self *xaxb) getUsableTable(session gate.Session) (map[string]interface{}, 
 }
 
 func (self *xaxb) enter(session gate.Session, msg map[string]interface{}) (string, string) {
+
 	if BigRoomId, ok := msg["BigRoomId"]; !ok {
 		return "", "No BigRoomId found"
 	} else {

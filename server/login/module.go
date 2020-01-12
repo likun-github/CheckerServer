@@ -4,7 +4,6 @@
 package login
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/liangdas/mqant/conf"
 	"github.com/liangdas/mqant/gate"
@@ -50,24 +49,27 @@ func (m *Login) robot(session gate.Session, msg map[string]interface{}) (result 
 	return "sss", ""
 }
 func (m *Login) login(session gate.Session, msg map[string]interface{}) (result string, err string) {
-	if msg["userName"] == nil || msg["passWord"] == nil {
-		result = "userName or passWord cannot be nil"
+	if msg["userid"] == nil  {
+		result = "userid cannot be nil"
 		return
 	}
-	userName := msg["userName"].(string)
-	err = session.Bind(userName)
+	fmt.Println("尝试绑定")
+	userid := msg["userid"].(string)
+	fmt.Println(userid)
+	//string := strconv.FormatFloat(userid,'E',-1,64)
+	err = session.Bind(userid)
 	// 直接创建1
-	m2 := make(map[string]string)
-	// 然后赋值
-	m2["a"] = "就是简单的尝试"
-	m2["b"] = "bb"
-	j,_:=json.Marshal(m2)
-	session.Send("try",j)
+	//m2 := make(map[string]string)
+	//// 然后赋值
+	//m2["a"] = "就是简单的尝试"
+	//m2["b"] = "bb"
+	//j,_:=json.Marshal(m2)
+	//session.Send("try",j)
 	if err != "" {
 		return
 	}
 	session.Set("login", "true")
 	session.Push() //推送到网关
-	return fmt.Sprintf("login success %s", userName), ""
+	return fmt.Sprintf("login success %s", userid), ""
 }
 
