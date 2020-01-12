@@ -71,7 +71,7 @@ func (self *xaxb) newTable(module module.RPCModule, tableId int) (room.BaseTable
 	return table, nil
 }
 func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
-	fmt.Println("初始化xaxb")
+
 	self.BaseModule.OnInit(self, app, settings, server.Metadata(map[string]string{
 		"type": "helloworld",
 	}))
@@ -79,7 +79,6 @@ func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
 	self.gameId = 13
 	self.room = room.NewRoom(self, self.gameId, self.newTable, self.usableTable)
 	self.GetServer().RegisterGO("GetUsableTable", self.getUsableTable)
-	self.GetServer().RegisterGO("HD_Login", self.login)
 	self.GetServer().RegisterGO("HD_GetUsableTable", self.HDGetUsableTable)
 	self.GetServer().RegisterGO("HD_Enter", self.enter)
 	self.GetServer().RegisterGO("HD_Exit", self.exit)
@@ -105,10 +104,6 @@ func (self *xaxb) OnDestroy() {
 
 
 
-func (self *xaxb) login(session gate.Session, msg map[string]interface{}) (result string, err string) {
-	fmt.Println("试一试是否可以运行")
-	return
-}
 
 
 

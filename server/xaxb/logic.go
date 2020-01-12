@@ -39,10 +39,11 @@ func (this *Table) InitFsm() {
 		fmt.Println("已进入空档期")
 		return VoidPeriod
 	})
+	//进入空闲期，剔除金币不足的人
 	this.IdlePeriodHandler = FSMHandler(func() FSMState {
 		fmt.Println("已进入空闲期")
-		this.step1 = this.current_frame
-		this.NotifyIdle()
+		this.step1 = this.current_frame//当前帧赋予空闲帧
+		this.NotifyIdle()//通知所有人进入空闲期
 
 		for _, seat := range this.GetSeats() {
 			player := seat.(*objects.Player)
@@ -56,6 +57,8 @@ func (this *Table) InitFsm() {
 
 		return IdlePeriod
 	})
+
+
 	this.BettingPeriodHandler = FSMHandler(func() FSMState {
 		fmt.Println("已进入押注期")
 		this.step2 = this.current_frame
@@ -76,6 +79,7 @@ func (this *Table) InitFsm() {
 		for _, seat := range this.GetSeats() {
 			player := seat.(*objects.Player)
 			if player.Stake {
+				//相差最近，猜中数字最准
 				player.Weight = int64(math.Abs(float64(player.Target - Result)))
 				if mixWeight > player.Weight {
 					mixWeight = player.Weight

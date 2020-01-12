@@ -5,6 +5,7 @@ package jump
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/liangdas/mqant-modules/room"
 	"github.com/liangdas/mqant/conf"
@@ -37,7 +38,14 @@ func (self *Jump) Version() string {
 func (self *Jump) GetFullServerId() string {
 	return self.GetServerId()
 }
+func (self *Jump) usableTable(table room.BaseTable) bool {
+	return table.AllowJoin()
+}
 
+func (self *Jump) newTable(module module.RPCModule, tableId int) (room.BaseTable, error) {
+	table := NewTable(module, tableId)
+	return table, nil
+}
 
 
 
@@ -46,9 +54,21 @@ func (self *Jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 		"type": "helloworld",
 	}))
 	//房间号
-	self.gameId = 13
+	self.gameId = 11
+	self.room = room.NewRoom(self, self.gameId, self.newTable, self.usableTable)
 
 	self.GetServer().RegisterGO("HD_Match", self.match) //我们约定所有对客户端的请求都以Handler_开头
+	self.GetServer().RegisterGO("HD_GetUsableTable", self.HDGetUsableTable)
+	self.GetServer().RegisterGO("HD_Enter", self.enter)
+	self.GetServer().RegisterGO("HD_Exit", self.exit)
+	self.GetServer().RegisterGO("HD_SitDown", self.sitdown)
+	self.GetServer().RegisterGO("HD_StartGame", self.startGame)
+	self.GetServer().RegisterGO("HD_PauseGame", self.pauseGame)
+	self.GetServer().RegisterGO("HD_Stake", self.stake)
+	self.GetServer().RegisterGO("HD_Hello", func(session gate.Session, msg map[string]interface{}) (string, string) {
+		//log.Info("HD_Hello")
+		return "success", ""
+	})
 	//房间号
 
 
@@ -75,20 +95,200 @@ func (self *Jump) match(session gate.Session, msg map[string]interface{}) (resul
 
 }
 
-func (self *Jump) login(session gate.Session, msg map[string]interface{}) (result string, err string) {
-	m2 := make(map[string]string)
-	// 然后赋值
-	m2["a"] = "就是简单的尝试"
-	m2["b"] = "bb"
-	j,_:=json.Marshal(m2)
-	session.Send("try",j)
-	fmt.Println("试一试是否可以运行")
-	session.GetUserId()
 
-	return
+
+/**
+检查参数是否存在
+*/
+func (self *Jump) ParameterCheck(msg map[string]interface{}, paras ...string) error {
+	for _, v := range paras {
+		if _, ok := msg[v]; !ok {
+			return fmt.Errorf("No %s found", v)
+		}
+	}
+	return nil
 }
 
+/**
+检查参数是否存在
+*/
+func (self *Jump) GetTableByBigRoomId(bigRoomId string) (*Table, error) {
+	_, tableid, _, err := room.ParseBigRoomId(bigRoomId)
+	if err != nil {
+		return nil, err
+	}
+	table := self.room.GetTable(tableid)
+	if table != nil {
+		tableimp := table.(*Table)
+		return tableimp, nil
+	} else {
+		return nil, errors.New("No table found")
+	}
+}
 
+/**
+查找可用座位
+*/
+
+func (self *Jump) HDGetUsableTable(session gate.Session, msg map[string]interface{}) (map[string]interface{}, string) {
+	fmt.Println("看看hd")
+	return self.getUsableTable(session)
+}
+
+/**
+查找可用座位
+*/
+
+func (self *Jump) getUsableTable(session gate.Session) (map[string]interface{}, string) {
+	//这个桌子分配逻辑还是不智能，如果空闲的桌子多了,人数少了不容易将他们分配到相同的桌子里面快速组局
+
+	table, err := self.room.GetUsableTable()
+
+
+	if err == nil {
+		table.Create()
+		tableInfo := map[string]interface{}{
+			"BigRoomId": room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId()),
+		}
+		b, _ := json.Marshal(tableInfo)
+		session.Send("table",b)
+		fmt.Println(tableInfo)
+		return tableInfo, ""
+	} else {
+		return nil, "There is no available table"
+	}
+}
+
+func (self *Jump) enter(session gate.Session, msg map[string]interface{}) (string, string) {
+	fmt.Println("看一看enter会不会跑")
+	if BigRoomId, ok := msg["BigRoomId"]; !ok {
+		return "", "No BigRoomId found"
+	} else {
+		bigRoomId := BigRoomId.(string)
+
+		moduleId, tableid, _, err := room.ParseBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		if session.Get("BigRoomId") != "" {
+			//用户当前已经加入过一个BigRoomId
+			if session.Get("BigRoomId") != bigRoomId {
+				//先从上一个桌子退出
+				_, e := self.RpcInvoke(moduleId, "HD_Exit", session, map[string]interface{}{
+					"BigRoomId": session.Get("BigRoomId"),
+				})
+				if e != "" {
+					return "", e
+				}
+			}
+		}
+		table := self.room.GetTable(tableid)
+		if table != nil {
+			tableimp := table.(*Table)
+			if table.VerifyAccessAuthority(session.GetUserId(), bigRoomId) == false {
+				return "", "Access rights validation failed"
+			}
+			erro := tableimp.Join(session)
+			if erro == nil {
+				bigRoomId = room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId())
+				session.Set("BigRoomId", bigRoomId) //设置到session
+				session.Push()
+				return bigRoomId, ""
+			}
+			return "", erro.Error()
+		} else {
+			return "", "No room found"
+		}
+	}
+
+}
+
+func (self *Jump) exit(session gate.Session, msg map[string]interface{}) (string, string) {
+	if BigRoomId, ok := msg["BigRoomId"]; !ok {
+		return "", "No BigRoomId found"
+	} else {
+		bigRoomId := BigRoomId.(string)
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		err = table.Exit(session)
+		if err == nil {
+			bigRoomId = room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId())
+			session.Set("BigRoomId", "") //设置到session
+			session.Push()
+			return bigRoomId, ""
+		}
+		return "", err.Error()
+	}
+
+}
+
+func (self *Jump) sitdown(session gate.Session, msg map[string]interface{}) (string, string) {
+	bigRoomId := session.Get("BigRoomId")
+	if bigRoomId == "" {
+		return "", "fail"
+	}
+	table, err := self.GetTableByBigRoomId(bigRoomId)
+	if err != nil {
+		return "", err.Error()
+	}
+	err = table.PutQueue("SitDown", session)
+	if err != nil {
+		return "", err.Error()
+	}
+	return "success", ""
+}
+func (self *Jump) startGame(session gate.Session, msg map[string]interface{}) (string, string) {
+	bigRoomId := session.Get("BigRoomId")
+	if bigRoomId == "" {
+		return "", "fail"
+	}
+	table, err := self.GetTableByBigRoomId(bigRoomId)
+	if err != nil {
+		return "", err.Error()
+	}
+	err = table.PutQueue("StartGame", session)
+	if err != nil {
+		return "", err.Error()
+	}
+	return "success", ""
+}
+func (self *Jump) pauseGame(session gate.Session, msg map[string]interface{}) (string, string) {
+	bigRoomId := session.Get("BigRoomId")
+	if bigRoomId == "" {
+		return "", "fail"
+	}
+	table, err := self.GetTableByBigRoomId(bigRoomId)
+	if err != nil {
+		return "", err.Error()
+	}
+	err = table.PutQueue("PauseGame", session)
+	if err != nil {
+		return "", err.Error()
+	}
+	return "success", ""
+}
+
+func (self *Jump) stake(session gate.Session, msg map[string]interface{}) (string, string) {
+	if Target, ok := msg["Target"]; !ok {
+		return "", "No Target found"
+	} else {
+		bigRoomId := session.Get("BigRoomId")
+		if bigRoomId == "" {
+			return "", "fail"
+		}
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		err = table.PutQueue("Stake", session, int64(Target.(float64)))
+		if err != nil {
+			return "", err.Error()
+		}
+		return "success", ""
+	}
+}
 
 
 

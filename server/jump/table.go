@@ -1,17 +1,16 @@
 package jump
 
 import (
-	"CheckerServer/server/common/stack"
-	"CheckerServer/server/xaxb/objects"
-"container/list"
-"github.com/liangdas/mqant-modules/room"
-"github.com/liangdas/mqant/gate"
-"github.com/liangdas/mqant/log"
-"github.com/liangdas/mqant/module"
-"github.com/liangdas/mqant/module/modules/timer"
-"math/rand"
-"sync"
-"time"
+	"CheckerServer/server/jump/objects"
+	"container/list"
+	"github.com/liangdas/mqant-modules/room"
+	"github.com/liangdas/mqant/gate"
+	"github.com/liangdas/mqant/log"
+	"github.com/liangdas/mqant/module"
+	"github.com/liangdas/mqant/module/modules/timer"
+	"math/rand"
+	"sync"
+	"time"
 )
 
 func init() {
@@ -53,11 +52,7 @@ type Table struct {
 	PlayDraughtHandler       FSMHandler
 	SettlementPeriodHandler  FSMHandler
 	step   					int64 //悔棋期帧
-	step1                   int64 //空档期帧frame
-	step2                   int64 //押注期帧frame
-	step3                   int64 //开奖期帧frame
-	step4                   int64 //结算期帧frame
-	composition 			*stack.Stack
+	//composition 			*stack.Stack
 }
 
 func NewTable(module module.RPCModule, tableId int) *Table {
@@ -65,10 +60,10 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 		module:        module,
 		stoped:        true,
 		seatMax:       2,
-		current_id:    0,
-		current_frame: 0,
-		sync_frame:    0,
-		composition:stack.NewStack(),
+		current_id:    0,//当前房间人数
+		current_frame: 0,//当前帧
+		sync_frame:    0,//当前认输
+		//composition:stack.NewStack(),//棋局
 	}
 	this.BaseTableImpInit(tableId, this)
 	this.QueueInit()
@@ -127,7 +122,7 @@ func (this *Table) VerifyAccessAuthority(userId string, bigRoomId string) bool {
 func (this *Table) AllowJoin() bool {
 	this.writelock.Lock()
 	ready := true
-	if this.current_id == 1 {
+	if this.current_id > 1 {
 		this.writelock.Unlock()
 		return false
 	}
@@ -169,17 +164,14 @@ func (this *Table) OnCreate() {
 func (this *Table) OnStart() {
 	log.Debug("Table", "OnStart")
 	for _, player := range this.seats {
-		player.Coin = 100000
-		player.Weight = 0
-		player.Target = 0
-		player.Stake = false
+		player.Controller=true
+		//player.Weight = 0
+		//player.Target = 0
+		//player.Stake = false
 	}
 	//将游戏状态设置到空闲期
-
-	this.step1 = 0
-	this.step2 = 0
-	this.step3 = 0
-	this.step4 = 0
+	this.fsm.Call(MatchPeriodEvent)
+	this.step=0
 	this.current_frame = 0
 	this.sync_frame = 0
 	this.BaseTableImp.OnStart()
@@ -198,7 +190,7 @@ func (this *Table) OnStop() {
 	this.BaseTableImp.OnStop()
 	log.Debug("Table", "OnStop")
 	//将游戏状态设置到空档期
-
+	this.fsm.Call(VoidPeriodEvent)
 	this.NotifyStop()
 	this.ExecuteCallBackMsg() //统一发送数据到客户端
 	for _, player := range this.seats {
@@ -301,4 +293,5 @@ func (self *Table) getLevel(session gate.Session) {
 		player.OnSitDown()
 	}
 }
+
 

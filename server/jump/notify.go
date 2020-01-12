@@ -3,8 +3,8 @@ package jump
 
 
 import (
-"CheckerServer/server/xaxb/objects"
-"encoding/json"
+	"CheckerServer/server/jump/objects"
+	"encoding/json"
 )
 
 /**
@@ -56,7 +56,15 @@ func (self *Table) NotifyStop() {
 	b, _ := json.Marshal(self.getSeatsMap())
 	self.NotifyCallBackMsg("XaXb/OnStop", b)
 }
-
+/**
+通知所有玩家进入匹配完成期了
+*/
+func (self *Table) NotifyMatch() {
+	b, _ := json.Marshal(map[string]interface{}{
+		"match": true,
+	})
+	self.NotifyCallBackMsg("Jump/Match", b)
+}
 /**
 通知所有玩家进入空闲期了
 */
