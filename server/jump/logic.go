@@ -1,10 +1,8 @@
 package jump
 
 import (
-"CheckerServer/server/xaxb/objects"
-"fmt"
-"github.com/liangdas/mqant/utils"
-"math"
+	"CheckerServer/server/xaxb/objects"
+	"fmt"
 )
 
 var (
@@ -52,53 +50,7 @@ func (this *Table) InitFsm() {
 
 		return ControlPeriod
 	})
-	this.BettingPeriodHandler = FSMHandler(func() FSMState {
-		fmt.Println("已进入押注期")
-		this.step2 = this.current_frame
-		this.NotifyBetting()
-		return BettingPeriod
-	})
-	this.OpeningPeriodHandler = FSMHandler(func() FSMState {
-		fmt.Println("已进入开奖期")
-		this.step3 = this.current_frame
-		this.NotifyOpening()
-		return OpeningPeriod
-	})
-	this.SettlementPeriodHandler = FSMHandler(func() FSMState {
-		fmt.Println("已进入结算期")
-		var mixWeight int64 = math.MaxInt64
-		var winer *objects.Player = nil
-		Result := utils.RandInt64(0, 10)
-		for _, seat := range this.GetSeats() {
-			player := seat.(*objects.Player)
-			if player.Stake {
-				player.Weight = int64(math.Abs(float64(player.Target - Result)))
-				if mixWeight > player.Weight {
-					mixWeight = player.Weight
-					winer = player
-				}
-			}
-		}
-		if winer != nil {
-			winer.Coin += 800
-		}
 
-		this.step4 = this.current_frame
-		this.NotifySettlement(Result)
-		return SettlementPeriod
-	})
-
-	//this.fsm.AddHandler(IdlePeriod, VoidPeriodEvent, this.VoidPeriodHandler)
-	//this.fsm.AddHandler(SettlementPeriod, VoidPeriodEvent, this.VoidPeriodHandler)
-	//this.fsm.AddHandler(BettingPeriod, VoidPeriodEvent, this.VoidPeriodHandler)
-	//this.fsm.AddHandler(OpeningPeriod, VoidPeriodEvent, this.VoidPeriodHandler)
-	//
-	//this.fsm.AddHandler(VoidPeriod, IdlePeriodEvent, this.IdlePeriodHandler)
-	//this.fsm.AddHandler(SettlementPeriod, IdlePeriodEvent, this.IdlePeriodHandler)
-	//
-	//this.fsm.AddHandler(IdlePeriod, BettingPeriodEvent, this.BettingPeriodHandler)
-	//this.fsm.AddHandler(BettingPeriod, OpeningPeriodEvent, this.OpeningPeriodHandler)
-	//this.fsm.AddHandler(OpeningPeriod, SettlementPeriodEvent, this.SettlementPeriodHandler)
 }
 
 /**

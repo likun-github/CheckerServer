@@ -175,7 +175,7 @@ func (this *Table) OnStart() {
 		player.Stake = false
 	}
 	//将游戏状态设置到空闲期
-	this.fsm.Call(IdlePeriodEvent)
+
 	this.step1 = 0
 	this.step2 = 0
 	this.step3 = 0
@@ -198,7 +198,7 @@ func (this *Table) OnStop() {
 	this.BaseTableImp.OnStop()
 	log.Debug("Table", "OnStop")
 	//将游戏状态设置到空档期
-	this.fsm.Call(VoidPeriodEvent)
+
 	this.NotifyStop()
 	this.ExecuteCallBackMsg() //统一发送数据到客户端
 	for _, player := range this.seats {

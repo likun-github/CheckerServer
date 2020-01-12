@@ -4,6 +4,7 @@ import (
 	"CheckerServer/server/database"
 	mgate "CheckerServer/server/gate"
 	"CheckerServer/server/helloworld"
+	"CheckerServer/server/jump"
 	"CheckerServer/server/login"
 	"CheckerServer/server/test"
 	"CheckerServer/server/xaxb"
@@ -80,7 +81,7 @@ func main() {
 		helloworld.Module(),
 		login.Module(), //这是用户登录验证模块
 
-		//jump.Module(),//跳棋模块
+		jump.Module(),//跳棋模块
 		//chat.Module(),
 		//user.Module(),
 		webapp.Module(),
