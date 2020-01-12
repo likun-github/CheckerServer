@@ -3,7 +3,7 @@ package jump
 
 
 import (
-"CheckerServer/server/xaxb/objects"
+"CheckerServer/server/jump/objects"
 "encoding/json"
 )
 
@@ -40,6 +40,15 @@ func (self *Table) NotifyResume() {
 	b, _ := json.Marshal(self.getSeatsMap())
 	self.NotifyCallBackMsg("XaXb/OnResume", b)
 }
+
+/*
+通知所有玩家对手的信息
+*/
+func (self *Table) NotifyOppoInfo() {
+	b, _ := json.Marshal(self.getSeatsMap())
+	self.NotifyCallBackMsg("XaXb/OnPause", b)
+}
+
 
 /**
 通知所有玩家开始游戏了

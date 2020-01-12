@@ -1,7 +1,7 @@
 package jump
 
 import (
-	"CheckerServer/server/xaxb/objects"
+	"CheckerServer/server/jump/objects"
 	"fmt"
 )
 
@@ -41,10 +41,12 @@ func (this *Table) InitFsm() {
 		for _, seat := range this.GetSeats() {
 			player := seat.(*objects.Player)
 			if player.Bind() {
+				/*
 				if player.Coin <= 0 {
 					player.Session().Send("XaXb/Exit", []byte(`{"Info":"金币不足你被强制离开房间"}`))
 					player.OnUnBind() //踢下线
 				}
+				 */
 			}
 		}
 

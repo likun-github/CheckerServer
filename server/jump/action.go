@@ -17,7 +17,7 @@ package jump
 // limitations under the License.
 
 import (
-"CheckerServer/server/xaxb/objects"
+"CheckerServer/server/jump/objects"
 "encoding/json"
 "fmt"
 "github.com/liangdas/mqant-modules/room"
@@ -133,9 +133,7 @@ func (self *Table) Stake(session gate.Session, target int64) error {
 		player := playerImp.(*objects.Player)
 		player.OnRequest(session)
 		player.OnSitDown()
-		player.Target = target
-		player.Stake = true
-		player.Coin -= 500
+
 		return nil
 	}
 	return nil

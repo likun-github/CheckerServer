@@ -2,7 +2,7 @@ package jump
 
 import (
 	"CheckerServer/server/common/stack"
-	"CheckerServer/server/xaxb/objects"
+	"CheckerServer/server/jump/objects"
 "container/list"
 "github.com/liangdas/mqant-modules/room"
 "github.com/liangdas/mqant/gate"
@@ -168,12 +168,6 @@ func (this *Table) OnCreate() {
 }
 func (this *Table) OnStart() {
 	log.Debug("Table", "OnStart")
-	for _, player := range this.seats {
-		player.Coin = 100000
-		player.Weight = 0
-		player.Target = 0
-		player.Stake = false
-	}
 	//将游戏状态设置到空闲期
 
 	this.step1 = 0

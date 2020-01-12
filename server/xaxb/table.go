@@ -98,9 +98,11 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 
 	return this
 }
+
 func (this *Table) GetModule() module.RPCModule {
 	return this.module
 }
+
 func (this *Table) GetSeats() []room.BasePlayer {
 	m := make([]room.BasePlayer, len(this.seats))
 	for i, seat := range this.seats {
@@ -108,6 +110,7 @@ func (this *Table) GetSeats() []room.BasePlayer {
 	}
 	return m
 }
+
 func (this *Table) GetViewer() *list.List {
 	return this.viewer
 }
@@ -132,6 +135,7 @@ func (this *Table) VerifyAccessAuthority(userId string, bigRoomId string) bool {
 	}
 	return true
 }
+
 func (this *Table) AllowJoin() bool {
 	this.writelock.Lock()
 	ready := true
@@ -152,6 +156,7 @@ func (this *Table) AllowJoin() bool {
 
 	return !ready
 }
+
 func (this *Table) OnCreate() {
 	this.BaseTableImp.OnCreate()
 	this.ResetTimeOut()
@@ -192,16 +197,19 @@ func (this *Table) OnStart() {
 	this.sync_frame = 0
 	this.BaseTableImp.OnStart()
 }
+
 func (this *Table) OnResume() {
 	this.BaseTableImp.OnResume()
 	log.Debug("Table", "OnResume")
 	this.NotifyResume()
 }
+
 func (this *Table) OnPause() {
 	this.BaseTableImp.OnPause()
 	log.Debug("Table", "OnPause")
 	this.NotifyPause()
 }
+
 func (this *Table) OnStop() {
 	this.BaseTableImp.OnStop()
 	log.Debug("Table", "OnStop")
@@ -219,6 +227,7 @@ func (this *Table) OnStop() {
 		this.viewer.Remove(e)
 	}
 }
+
 func (this *Table) OnDestroy() {
 	this.BaseTableImp.OnDestroy()
 	log.Debug("BaseTableImp", "OnDestroy")
