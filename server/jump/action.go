@@ -85,7 +85,7 @@ func (self *Table) Join(session gate.Session) error {
 			"SeatIndex": playerImp.SeatIndex,
 		}
 		b, _ := json.Marshal(result)
-		session.Send("XaXb/OnEnter", b)
+		session.Send("Jump/OnEnter", b)
 
 		return nil
 	}
@@ -102,26 +102,13 @@ func (self *Table) Join(session gate.Session) error {
 				"SeatIndex": indexSeat,
 			}
 			b, _ := json.Marshal(result)
-			session.Send("XaXb/OnEnter", b)
+			session.Send("Jump/OnEnter", b)
 			break
 		}
 	}
 
 	if indexSeat == -1 {
-		//没有位置了,加入到观众列表
-		//for e := self.viewer.Front(); e != nil; e = e.Next() {
-		//	if e.Value.(gate.Session).GetUserid()==session.GetUserid(){
-		//		return	nil
-		//	}
-		//}
-		//self.viewer.PushBack(session)
-		//
-		//result:=map[string]interface{}{
-		//	"Rid":"",
-		//	"SeatIndex":indexSeat,
-		//}
-		//b, _ := json.Marshal(result)
-		//session.Send("Shoot/OnEnter", b)
+
 		return fmt.Errorf("房间已满,无法加入游戏")
 	}
 	return nil
@@ -136,6 +123,22 @@ func (self *Table) Stake(session gate.Session, target int64) error {
 		player := playerImp.(*objects.Player)
 		player.OnRequest(session)
 		player.OnSitDown()
+		return nil
+	}
+	return nil
+}
+//角色绑定
+func (self *Table) login(session gate.Session, Score int64,username string,avatar string) error {
+	fmt.Println("函数运行了吗")
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.Score=Score
+		player.Username=username
+		player.Avatar=avatar
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
 		return nil
 	}
 	return nil

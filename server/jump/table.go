@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"sync"
 	"time"
+
 )
 
 func init() {
@@ -67,7 +68,7 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 		seatMax:       2,
 		current_id:    0,//当前房间人数
 		current_frame: 0,//当前帧
-		sync_frame:    0,//当前认输
+		sync_frame:    0,//上一帧
 		//composition:stack.NewStack(),//棋局
 	}
 	this.BaseTableImpInit(tableId, this)
@@ -84,6 +85,8 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 	this.Register("StartGame", this.StartGame)
 	this.Register("PauseGame", this.PauseGame)
 	this.Register("Stake", this.Stake)
+	this.Register("Login", this.login)
+
 	for indexSeat, _ := range this.seats {
 		this.seats[indexSeat] = objects.NewPlayer(indexSeat)
 	}
@@ -91,6 +94,7 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 	return this
 }
 func (this *Table) GetModule() module.RPCModule {
+
 	return this.module
 }
 func (this *Table) GetSeats() []room.BasePlayer {
@@ -170,7 +174,7 @@ func (this *Table) OnCreate() {
 func (this *Table) OnStart() {
 	log.Debug("Table", "OnStart")
 	for _, player := range this.seats {
-		player.Controller=true
+		player.Score=1000
 		//player.Weight = 0
 		//player.Target = 0
 		//player.Stake = false
@@ -223,6 +227,8 @@ func (self *Table) onGameOver() {
 牌桌主循环
 定帧计算所有玩家的位置
 */
+
+
 func (self *Table) Update(arge interface{}) {
 	self.ExecuteEvent(arge) //执行这一帧客户端发送过来的消息
 	if self.State() == room.Active {

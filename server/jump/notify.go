@@ -30,7 +30,7 @@ func (self *Table) NotifyAxes() {
 */
 func (self *Table) NotifyJoin(player *objects.Player) {
 	b, _ := json.Marshal(player.SerializableMap())
-	self.NotifyCallBackMsg("XaXb/OnEnter", b)
+	self.NotifyCallBackMsg("Jump/OnEnter", b)
 }
 
 /**
@@ -38,7 +38,7 @@ func (self *Table) NotifyJoin(player *objects.Player) {
 */
 func (self *Table) NotifyResume() {
 	b, _ := json.Marshal(self.getSeatsMap())
-	self.NotifyCallBackMsg("XaXb/OnResume", b)
+	self.NotifyCallBackMsg("Jump/OnResume", b)
 }
 
 /**
@@ -92,7 +92,7 @@ func (self *Table) NotifyOpening() {
 	b, _ := json.Marshal(map[string]interface{}{
 		"Coin": 500,
 	})
-	self.NotifyCallBackMsg("XaXb/Opening", b)
+	self.NotifyCallBackMsg("Jump/Opening", b)
 }
 
 /**
@@ -111,4 +111,5 @@ func (self *Table) NotifySettlement(Result int64) {
 	})
 	self.NotifyCallBackMsg("XaXb/Settlement", b)
 }
+
 
