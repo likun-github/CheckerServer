@@ -69,6 +69,15 @@ func (self *Jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 		//log.Info("HD_Hello")
 		return "success", ""
 	})
+
+	self.GetServer().RegisterGO("HD_Control", self.control)//行棋
+	self.GetServer().RegisterGO("HD_Withdraw", self.withdraw)//悔棋
+	self.GetServer().RegisterGO("HD_WithdrawDecided", self.withdrawdecided)//同意悔棋
+	self.GetServer().RegisterGO("HD_Draw", self.draw)//和棋
+	self.GetServer().RegisterGO("HD_Lose", self.lose)//认输
+
+
+
 	//房间号
 
 
@@ -286,9 +295,106 @@ func (self *Jump) stake(session gate.Session, msg map[string]interface{}) (strin
 	}
 }
 
-
-
-
+//行棋
+func (self *Jump) control(session gate.Session, msg map[string]interface{}) (string, string) {
+	if Target, ok := msg["Target"]; !ok {
+		return "", "No Target found"
+	} else {
+		bigRoomId := session.Get("BigRoomId")
+		if bigRoomId == "" {
+			return "", "fail"
+		}
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		err = table.PutQueue("Stake", session, int64(Target.(float64)))
+		if err != nil {
+			return "", err.Error()
+		}
+		return "success", ""
+	}
+}
+//悔棋
+func (self *Jump) withdraw(session gate.Session, msg map[string]interface{}) (string, string) {
+	if Target, ok := msg["Target"]; !ok {
+		return "", "No Target found"
+	} else {
+		bigRoomId := session.Get("BigRoomId")
+		if bigRoomId == "" {
+			return "", "fail"
+		}
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		err = table.PutQueue("Stake", session, int64(Target.(float64)))
+		if err != nil {
+			return "", err.Error()
+		}
+		return "success", ""
+	}
+}
+//同意悔棋
+func (self *Jump) withdrawdecided(session gate.Session, msg map[string]interface{}) (string, string) {
+	if Target, ok := msg["Target"]; !ok {
+		return "", "No Target found"
+	} else {
+		bigRoomId := session.Get("BigRoomId")
+		if bigRoomId == "" {
+			return "", "fail"
+		}
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		err = table.PutQueue("Stake", session, int64(Target.(float64)))
+		if err != nil {
+			return "", err.Error()
+		}
+		return "success", ""
+	}
+}
+//求和
+func (self *Jump) draw(session gate.Session, msg map[string]interface{}) (string, string) {
+	if Target, ok := msg["Target"]; !ok {
+		return "", "No Target found"
+	} else {
+		bigRoomId := session.Get("BigRoomId")
+		if bigRoomId == "" {
+			return "", "fail"
+		}
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		err = table.PutQueue("Stake", session, int64(Target.(float64)))
+		if err != nil {
+			return "", err.Error()
+		}
+		return "success", ""
+	}
+}
+//认输
+func (self *Jump) lose(session gate.Session, msg map[string]interface{}) (string, string) {
+	if Target, ok := msg["Target"]; !ok {
+		return "", "No Target found"
+	} else {
+		bigRoomId := session.Get("BigRoomId")
+		if bigRoomId == "" {
+			return "", "fail"
+		}
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		err = table.PutQueue("Stake", session, int64(Target.(float64)))
+		if err != nil {
+			return "", err.Error()
+		}
+		return "success", ""
+	}
+}
 
 
 

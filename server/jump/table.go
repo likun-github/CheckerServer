@@ -38,6 +38,7 @@ type Table struct {
 	room.TimeOutTable
 	module                  module.RPCModule
 	seats                   []*objects.Player
+	currentPlayer           int//0,1
 	viewer                  *list.List //观众
 	seatMax                 int        //房间最大座位数
 	current_id              int64		//当前房间人数
@@ -45,12 +46,16 @@ type Table struct {
 	sync_frame              int64 //上一次同步数据的帧
 	stoped                  bool
 	writelock               sync.Mutex
-	MatchPeriodHandler       FSMHandler
-	ControlPeriodHandler     FSMHandler
-	WithdrawPeriodHandler    FSMHandler
-	LosePeriodHandler        FSMHandler
-	PlayDraughtHandler       FSMHandler
-	SettlementPeriodHandler  FSMHandler
+
+	MatchPeriodHandler         FSMHandler//空挡转匹配完成
+	Match2ControlHandler       FSMHandler//匹配完成到控制期
+	Control2WithdrawHandler    FSMHandler//控制期转悔棋期
+	Withdraw2ControlHandler    FSMHandler//悔棋期转控制期
+	Control2DrawHandler        FSMHandler//控制期转求和期
+	Draw2ControlHandler        FSMHandler//求和期转控制期
+	Control2PlayDraughtHandler FSMHandler//控制期转行棋期
+	PlayDraught2ControlHandler FSMHandler//行棋期转控制期
+	SettlementPeriodHandler    FSMHandler//控制到结算期
 	step   					int64 //悔棋期帧
 	//composition 			*stack.Stack
 }
@@ -139,10 +144,11 @@ func (this *Table) AllowJoin() bool {
 
 	return !ready
 }
+
 func (this *Table) OnCreate() {
 	this.BaseTableImp.OnCreate()
 	this.ResetTimeOut()
-	log.Debug("Table", "OnCreate")
+	//log.Debug("Table", "OnCreate")
 	if this.stoped {
 		this.stoped = false
 		timewheel.GetTimeWheel().AddTimer(1000*time.Millisecond, nil, this.Update)

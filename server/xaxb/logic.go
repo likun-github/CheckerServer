@@ -58,7 +58,6 @@ func (this *Table) InitFsm() {
 		return IdlePeriod
 	})
 
-
 	this.BettingPeriodHandler = FSMHandler(func() FSMState {
 		fmt.Println("已进入押注期")
 		this.step2 = this.current_frame

@@ -23,7 +23,7 @@ import (
 "github.com/liangdas/mqant-modules/room"
 "github.com/liangdas/mqant/gate"
 )
-
+//坐下
 func (self *Table) SitDown(session gate.Session) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
@@ -36,6 +36,7 @@ func (self *Table) SitDown(session gate.Session) error {
 	}
 	return nil
 }
+
 func (self *Table) StartGame(session gate.Session) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
