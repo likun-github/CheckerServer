@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"sync"
 	"time"
+
 )
 
 func init() {
@@ -93,6 +94,7 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 	return this
 }
 func (this *Table) GetModule() module.RPCModule {
+
 	return this.module
 }
 func (this *Table) GetSeats() []room.BasePlayer {
