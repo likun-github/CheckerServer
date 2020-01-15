@@ -140,6 +140,7 @@ func (self *Jump) GetTableByBigRoomId(bigRoomId string) (*Table, error) {
 
 func (self *Jump) HDGetUsableTable(session gate.Session, msg map[string]interface{}) (map[string]interface{}, string) {
 	fmt.Println("看看hd")
+
 	return self.getUsableTable(session)
 }
 
@@ -157,8 +158,9 @@ func (self *Jump) getUsableTable(session gate.Session) (map[string]interface{}, 
 		tableInfo := map[string]interface{}{
 			"BigRoomId": room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId()),
 		}
-		b, _ := json.Marshal(tableInfo)
-		session.Send("table",b)
+		//b, _ := json.Marshal(tableInfo)
+		self.enter(session,tableInfo)
+		//session.Send("table",b)
 		fmt.Println(tableInfo)
 		return tableInfo, ""
 	} else {
@@ -173,7 +175,6 @@ func (self *Jump) enter(session gate.Session, msg map[string]interface{}) (strin
 		return "", "No BigRoomId found"
 	} else {
 		bigRoomId := BigRoomId.(string)
-
 		moduleId, tableid, _, err := room.ParseBigRoomId(bigRoomId)
 		if err != nil {
 			return "", err.Error()

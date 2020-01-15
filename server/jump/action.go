@@ -74,6 +74,7 @@ func (self *Table) Join(session gate.Session) error {
 	self.writelock.Lock()
 	defer self.writelock.Unlock()
 	player := self.GetBindPlayer(session)
+
 	if player != nil {
 		playerImp := player.(*objects.Player)
 		playerImp.OnRequest(session)
