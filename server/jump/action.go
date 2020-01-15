@@ -30,6 +30,8 @@ func (self *Table) SitDown(session gate.Session) error {
 		player := playerImp.(*objects.Player)
 		player.OnRequest(session)
 		player.OnSitDown()
+
+
 		return nil
 	}
 	return nil
@@ -133,7 +135,6 @@ func (self *Table) Stake(session gate.Session, target int64) error {
 		player := playerImp.(*objects.Player)
 		player.OnRequest(session)
 		player.OnSitDown()
-
 		return nil
 	}
 	return nil
