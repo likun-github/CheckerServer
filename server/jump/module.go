@@ -166,9 +166,10 @@ func (self *Jump) getUsableTable(session gate.Session) (map[string]interface{}, 
 		return nil, "There is no available table"
 	}
 }
-
+//进入桌子
 func (self *Jump) enter(session gate.Session, msg map[string]interface{}) (string, string) {
-	fmt.Println("看一看enter会不会跑")
+	//fmt.Println("看一看enter会不会跑")
+
 	if BigRoomId, ok := msg["BigRoomId"]; !ok {
 		return "", "No BigRoomId found"
 	} else {

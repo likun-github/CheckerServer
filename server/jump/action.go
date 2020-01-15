@@ -85,7 +85,7 @@ func (self *Table) Join(session gate.Session) error {
 			"SeatIndex": playerImp.SeatIndex,
 		}
 		b, _ := json.Marshal(result)
-		session.Send("XaXb/OnEnter", b)
+		session.Send("Jump/OnEnter", b)
 
 		return nil
 	}
@@ -102,7 +102,7 @@ func (self *Table) Join(session gate.Session) error {
 				"SeatIndex": indexSeat,
 			}
 			b, _ := json.Marshal(result)
-			session.Send("XaXb/OnEnter", b)
+			session.Send("Jump/OnEnter", b)
 			break
 		}
 	}
@@ -136,6 +136,18 @@ func (self *Table) Stake(session gate.Session, target int64) error {
 		player := playerImp.(*objects.Player)
 		player.OnRequest(session)
 		player.OnSitDown()
+		return nil
+	}
+	return nil
+}
+//角色绑定
+func (self *Table) login(session gate.Session, username string,) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+
 		return nil
 	}
 	return nil

@@ -67,7 +67,7 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 		seatMax:       2,
 		current_id:    0,//当前房间人数
 		current_frame: 0,//当前帧
-		sync_frame:    0,//当前认输
+		sync_frame:    0,//上一帧
 		//composition:stack.NewStack(),//棋局
 	}
 	this.BaseTableImpInit(tableId, this)
@@ -170,7 +170,7 @@ func (this *Table) OnCreate() {
 func (this *Table) OnStart() {
 	log.Debug("Table", "OnStart")
 	for _, player := range this.seats {
-		player.Controller=true
+		player.Score=1000
 		//player.Weight = 0
 		//player.Target = 0
 		//player.Stake = false

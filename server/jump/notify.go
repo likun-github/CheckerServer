@@ -30,7 +30,7 @@ func (self *Table) NotifyAxes() {
 */
 func (self *Table) NotifyJoin(player *objects.Player) {
 	b, _ := json.Marshal(player.SerializableMap())
-	self.NotifyCallBackMsg("XaXb/OnEnter", b)
+	self.NotifyCallBackMsg("Jump/OnEnter", b)
 }
 
 /**
