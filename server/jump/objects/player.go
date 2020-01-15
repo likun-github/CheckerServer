@@ -8,7 +8,6 @@ type Player struct {
 	room.BasePlayerImp  //继承父类，
 	SeatIndex  int
 	Time       int//计时10min,600s
-
 	Controller bool //是否为控制方
 	BackNumber int //悔棋次数
 	Score      int //分数

@@ -17,23 +17,26 @@ package jump
 // limitations under the License.
 
 import (
-"CheckerServer/server/xaxb/objects"
+"CheckerServer/server/jump/objects"
 "encoding/json"
 "fmt"
 "github.com/liangdas/mqant-modules/room"
 "github.com/liangdas/mqant/gate"
 )
-
+//坐下
 func (self *Table) SitDown(session gate.Session) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
 		player := playerImp.(*objects.Player)
 		player.OnRequest(session)
 		player.OnSitDown()
+
+
 		return nil
 	}
 	return nil
 }
+
 func (self *Table) StartGame(session gate.Session) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
@@ -133,9 +136,6 @@ func (self *Table) Stake(session gate.Session, target int64) error {
 		player := playerImp.(*objects.Player)
 		player.OnRequest(session)
 		player.OnSitDown()
-		player.Target = target
-		player.Stake = true
-		player.Coin -= 500
 		return nil
 	}
 	return nil
