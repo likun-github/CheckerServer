@@ -9,9 +9,9 @@ type Player struct {
 	SeatIndex  int	//id,0为白子方，1为黑子方
 	Time       int//计时10min,600s
 	BackNumber int //悔棋次数
-	Score      int //分数
-	username   string//用户昵称
-	avatar     string//用户头像
+	Score      int64 //分数
+	Username   string//用户昵称
+	Avatar     string//用户头像
 
 }
 //新建用户，基本属性
@@ -37,6 +37,7 @@ func (this *Player) SerializableMap() map[string]interface{} {
 	return map[string]interface{}{
 		"SeatIndex": this.SeatIndex,
 		"Rid":       rid,
+		"Username":    this.Username,
 		//"Coin":      this.Coin,
 		//"Stake":     this.Stake,
 		//"Target":    this.Target,

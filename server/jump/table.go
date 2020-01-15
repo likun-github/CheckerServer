@@ -84,6 +84,8 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 	this.Register("StartGame", this.StartGame)
 	this.Register("PauseGame", this.PauseGame)
 	this.Register("Stake", this.Stake)
+	this.Register("Login", this.login)
+
 	for indexSeat, _ := range this.seats {
 		this.seats[indexSeat] = objects.NewPlayer(indexSeat)
 	}
@@ -223,6 +225,8 @@ func (self *Table) onGameOver() {
 牌桌主循环
 定帧计算所有玩家的位置
 */
+
+
 func (self *Table) Update(arge interface{}) {
 	self.ExecuteEvent(arge) //执行这一帧客户端发送过来的消息
 	if self.State() == room.Active {

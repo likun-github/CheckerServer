@@ -1,9 +1,7 @@
 package jump
 
-
-
-
 import (
+	"CheckerServer/server/dao"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +11,7 @@ import (
 	"github.com/liangdas/mqant/module"
 	"github.com/liangdas/mqant/module/base"
 	"github.com/liangdas/mqant/server"
+	"strconv"
 )
 
 var Module = func() module.Module {
@@ -69,7 +68,7 @@ func (self *Jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 		//log.Info("HD_Hello")
 		return "success", ""
 	})
-
+	self.GetServer().RegisterGO("HD_Login", self.login)//行棋
 	self.GetServer().RegisterGO("HD_Control", self.control)//行棋
 	self.GetServer().RegisterGO("HD_Withdraw", self.withdraw)//悔棋
 	self.GetServer().RegisterGO("HD_WithdrawDecided", self.withdrawdecided)//同意悔棋
@@ -298,7 +297,32 @@ func (self *Jump) stake(session gate.Session, msg map[string]interface{}) (strin
 		return "success", ""
 	}
 }
+//player绑定
+func (self *Jump) login(session gate.Session, msg map[string]interface{}) (string, string) {
+	if msg["userid"] == nil  {
+		return "","没有用户id"
+	}
+	userid := msg["userid"].(string)
+	infoDao := dao.NewUserInfoDao()
 
+	userId, _ := strconv.ParseInt(userid, 10, 64)
+	userInfo := infoDao.SelectById(userId)
+	session.Bind(userInfo.WxName)
+	bigRoomId := session.Get("BigRoomId")
+	if bigRoomId == "" {
+		return "", "fail"
+	}
+	table, err := self.GetTableByBigRoomId(bigRoomId)
+	if err != nil {
+		return "", err.Error()
+	}
+	err = table.PutQueue("Login", session, userInfo.Score,userInfo.WxName,userInfo.WXImg)
+	if err != nil {
+		return "", err.Error()
+	}
+	return "success", ""
+
+}
 //行棋
 func (self *Jump) control(session gate.Session, msg map[string]interface{}) (string, string) {
 	if Target, ok := msg["Target"]; !ok {
