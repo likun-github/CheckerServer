@@ -17,26 +17,31 @@ package jump
 // limitations under the License.
 
 import (
-"CheckerServer/server/jump/objects"
-"encoding/json"
-"fmt"
-"github.com/liangdas/mqant-modules/room"
-"github.com/liangdas/mqant/gate"
+	"CheckerServer/server/jump/objects"
+	"errors"
+	"fmt"
+	"github.com/liangdas/mqant-modules/room"
+	"github.com/liangdas/mqant/gate"
+	"strconv"
 )
 //坐下
+/*
 func (self *Table) SitDown(session gate.Session) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
 		player := playerImp.(*objects.Player)
 		player.OnRequest(session)
 		player.OnSitDown()
-
-
+		if player.SitDown() {
+			fmt.Println("玩家成功坐下")
+		}
 		return nil
 	}
 	return nil
 }
 
+ */
+/*
 func (self *Table) StartGame(session gate.Session) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
@@ -55,6 +60,8 @@ func (self *Table) StartGame(session gate.Session) error {
 	return nil
 }
 
+ */
+/*
 func (self *Table) PauseGame(session gate.Session) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
@@ -67,49 +74,53 @@ func (self *Table) PauseGame(session gate.Session) error {
 	return nil
 }
 
+ */
+
 /**
 玩家加入场景
 */
-func (self *Table) Join(session gate.Session) error {
+func (self *Table) Join(session gate.Session/*, userinfo *model.UserInfo*/) error {
 	self.writelock.Lock()
 	defer self.writelock.Unlock()
-	player := self.GetBindPlayer(session)
 
+	// 更改table状态
+	if self.State() == room.Active {
+	} else if self.State() == room.Initialized {
+		self.Start()
+	} else if self.State() == room.Paused {
+		self.Resume()
+	}
+
+	player := self.GetBindPlayer(session)
 	if player != nil {
+		fmt.Println("player已经跟session绑定")
 		playerImp := player.(*objects.Player)
 		playerImp.OnRequest(session)
 
-		//回复当前状态
-		result := map[string]interface{}{
-			"State":     self.State(),
-			"Rid":       player.Session().GetUserId(),
-			"SeatIndex": playerImp.SeatIndex,
-		}
-		b, _ := json.Marshal(result)
-		session.Send("Jump/OnEnter", b)
 
 		return nil
 	}
+	fmt.Println("player还没有跟session绑定")
 	var indexSeat int = -1
 	for i, player := range self.seats {
 		if !player.Bind() {
 			indexSeat = i
-			player.OnBind(session)
-			self.NotifyJoin(player) //广播给所有其他玩家
 
-			result := map[string]interface{}{
-				"State":     self.State(),
-				"Rid":       player.Session().GetUserId(),
-				"SeatIndex": indexSeat,
+			if i == 1 {
+				userid,_ := strconv.ParseInt(session.GetUserId(), 10, 64)
+				if self.seats[0].UserId == userid {
+					return fmt.Errorf("此userid已加入过桌子")
+				}
 			}
-			b, _ := json.Marshal(result)
-			session.Send("Jump/OnEnter", b)
+
+			player.OnBind(session)
+			fmt.Println("player完成跟session的绑定")
+			player.OnRequest(session)
+			//self.NotifyJoin(player) //广播给所有其他玩家
 			break
 		}
 	}
-
 	if indexSeat == -1 {
-
 		return fmt.Errorf("房间已满,无法加入游戏")
 	}
 	return nil
@@ -118,6 +129,7 @@ func (self *Table) Join(session gate.Session) error {
 /**
 玩家押注
 */
+/*
 func (self *Table) Stake(session gate.Session, target int64) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
@@ -128,20 +140,124 @@ func (self *Table) Stake(session gate.Session, target int64) error {
 	}
 	return nil
 }
+ */
+
 //角色绑定
-func (self *Table) login(session gate.Session, Score int64,username string,avatar string) error {
-	fmt.Println("函数运行了吗")
+
+func (self *Table) Login(session gate.Session, userid int64, level int8, score int64,username string,avatar string) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
 		player := playerImp.(*objects.Player)
-		player.Score=Score
+
+		player.UserId = userid
 		player.Username=username
 		player.Avatar=avatar
+		player.Score=score
+		player.Level = level
+		fmt.Println("player与数据库里的信息绑定成功")
+
+		player.OnRequest(session)
+		player.OnSitDown()
+		if player.SitDown() {
+			fmt.Println("玩家成功坐下")
+		}
+
+		return nil
+	} else {
+		return errors.New("session没有和player绑定")
+	}
+
+}
+
+
+// 控制方走子完成
+func (self *Table) PlayOneTurn(session gate.Session, composition *Chess) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+
 		player.OnRequest(session)
 		player.OnSitDown()
 		fmt.Println("绑定成功")
-		return nil
 	}
+
+	self.composition.Push(composition)
+	fmt.Println("控制方走子加入棋局栈")
 	return nil
 }
 
+// 控制方悔棋
+func (self *Table) Withdraw(session gate.Session) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
+		// 判断控制方是否还有悔棋次数
+		if player.WithdrawNumber > 0 { // 玩家还有悔棋次数，可以悔棋
+			self.withdraw_requested = 1
+		} else { // 玩家没有悔棋次数，不能悔棋
+			session.Send("CannotWithdraw",nil)
+		}
+	}
+
+	return nil
+}
+
+// 非控制方确定悔棋结果
+func (self *Table) WithdrawDecided(session gate.Session, withdrawAgreed int) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
+	}
+
+	self.withdraw_agreed = withdrawAgreed
+	return nil
+}
+
+// 控制方请求和棋
+func (self *Table) Draw(session gate.Session) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
+	}
+
+	self.draw_requested = 1
+	return nil
+}
+
+// 非控制方确定和棋结果
+func (self *Table) DrawDecided(session gate.Session, drawAgreed int) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
+	}
+
+	self.draw_agreed = drawAgreed
+	return nil
+}
+
+// 控制方认输
+func (self *Table) Lose(session gate.Session,  lose_checker_color int) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
+	}
+
+	self.lose_requested = lose_checker_color
+
+	return nil
+}

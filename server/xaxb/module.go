@@ -70,6 +70,7 @@ func (self *xaxb) newTable(module module.RPCModule, tableId int) (room.BaseTable
 	table := NewTable(module, tableId)
 	return table, nil
 }
+
 func (self *xaxb) OnInit(app module.App, settings *conf.ModuleSettings) {
 
 	self.BaseModule.OnInit(self, app, settings, server.Metadata(map[string]string{
@@ -162,18 +163,14 @@ func (self *xaxb) HDGetUsableTable(session gate.Session, msg map[string]interfac
 */
 
 func (self *xaxb) getUsableTable(session gate.Session) (map[string]interface{}, string) {
-	fmt.Println("运行了吗")
 	//这个桌子分配逻辑还是不智能，如果空闲的桌子多了,人数少了不容易将他们分配到相同的桌子里面快速组局
 	table, err := self.room.GetUsableTable()
 
-	fmt.Println("看看桌子")
-
 	if err == nil {
-		table.Create()
+		table.Create()	// 为什么又create一次？？？
 		tableInfo := map[string]interface{}{
 			"BigRoomId": room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId()),
 		}
-		fmt.Println(tableInfo)
 		return tableInfo, ""
 	} else {
 		return nil, "There is no available table"
@@ -181,7 +178,6 @@ func (self *xaxb) getUsableTable(session gate.Session) (map[string]interface{}, 
 }
 
 func (self *xaxb) enter(session gate.Session, msg map[string]interface{}) (string, string) {
-
 	if BigRoomId, ok := msg["BigRoomId"]; !ok {
 		return "", "No BigRoomId found"
 	} else {
@@ -203,6 +199,7 @@ func (self *xaxb) enter(session gate.Session, msg map[string]interface{}) (strin
 				}
 			}
 		}
+		// 找桌子
 		table := self.room.GetTable(tableid)
 		if table != nil {
 			tableimp := table.(*Table)
@@ -260,6 +257,7 @@ func (self *xaxb) sitdown(session gate.Session, msg map[string]interface{}) (str
 	}
 	return "success", ""
 }
+
 func (self *xaxb) startGame(session gate.Session, msg map[string]interface{}) (string, string) {
 	bigRoomId := session.Get("BigRoomId")
 	if bigRoomId == "" {
@@ -275,6 +273,7 @@ func (self *xaxb) startGame(session gate.Session, msg map[string]interface{}) (s
 	}
 	return "success", ""
 }
+
 func (self *xaxb) pauseGame(session gate.Session, msg map[string]interface{}) (string, string) {
 	bigRoomId := session.Get("BigRoomId")
 	if bigRoomId == "" {

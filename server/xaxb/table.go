@@ -179,6 +179,7 @@ func (this *Table) OnCreate() {
 		//}()
 	}
 }
+
 func (this *Table) OnStart() {
 	log.Debug("Table", "OnStart")
 	for _, player := range this.seats {

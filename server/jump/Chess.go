@@ -2,11 +2,11 @@ package jump
 
 type Chess struct {
 	//number int
-	white int64
-	black int64
-	king int64
+	white string
+	black string
+	king string
 }
-func NewChess(white int64,black int64,king int64)  *Chess{
+func NewChess(white string,black string,king string)  *Chess{
 	p:=&Chess{}
 	p.white=white
 	p.black=black

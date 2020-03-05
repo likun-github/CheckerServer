@@ -64,12 +64,14 @@ func (this *Table) InitFsm() {
 		this.NotifyBetting()
 		return BettingPeriod
 	})
+
 	this.OpeningPeriodHandler = FSMHandler(func() FSMState {
 		fmt.Println("已进入开奖期")
 		this.step3 = this.current_frame
 		this.NotifyOpening()
 		return OpeningPeriod
 	})
+
 	this.SettlementPeriodHandler = FSMHandler(func() FSMState {
 		fmt.Println("已进入结算期")
 		var mixWeight int64 = math.MaxInt64

@@ -1,6 +1,7 @@
 package jump
 
 import (
+	"CheckerServer/server/common/stack"
 	"CheckerServer/server/jump/objects"
 	"container/list"
 	"github.com/liangdas/mqant-modules/room"
@@ -11,7 +12,6 @@ import (
 	"math/rand"
 	"sync"
 	"time"
-
 )
 
 func init() {
@@ -39,13 +39,14 @@ type Table struct {
 	room.TimeOutTable
 	module                  module.RPCModule
 	seats                   []*objects.Player
-	currentPlayer           int//0,1
-	viewer                  *list.List //观众
-	seatMax                 int        //房间最大座位数
+	currentPlayer           int			//0：白子,1：黑子
+	viewer                  *list.List 	//观众
+	seatMax                 int        	//房间最大座位数
 	current_id              int64		//当前房间人数
-	current_frame           int64 //当前帧
-	sync_frame              int64 //上一次同步数据的帧
+	current_frame           int64 		//当前帧
+	sync_frame              int64 		//上一次同步数据的帧
 	stoped                  bool
+	control_time 			int64		// 玩家的控制时间，是个变量。开始时为 s，走了 步后为 s。
 	writelock               sync.Mutex
 
 	MatchPeriodHandler         FSMHandler//空挡转匹配完成
@@ -54,38 +55,80 @@ type Table struct {
 	Withdraw2ControlHandler    FSMHandler//悔棋期转控制期
 	Control2DrawHandler        FSMHandler//控制期转求和期
 	Draw2ControlHandler        FSMHandler//求和期转控制期
-	Control2PlayDraughtHandler FSMHandler//控制期转行棋期
-	PlayDraught2ControlHandler FSMHandler//行棋期转控制期
+	Control2PlayFinishHandler  FSMHandler//控制期转行棋完成期
+	PlayFinish2ControlHandler  FSMHandler//行棋完成期转控制期
 	SettlementPeriodHandler    FSMHandler//控制到结算期
-	step   					int64 //悔棋期帧
-	//composition 			*stack.Stack
+
+	// 计时相关
+	start_match_step   					int64 // 匹配开始时的帧
+	start_control_step					int64 // 控制方玩家开始控制时的帧
+	start_withdraw_step					int64 // 非控制方玩家开始决定是否同意悔棋时的帧
+	start_draw_step						int64 // 非控制方玩家开始决定是否同意和棋时的帧
+
+	// 悔棋相关
+	withdraw_requested  int // 是否有玩家要求悔棋：0(没有),1(有)
+	withdraw_agreed		int // 悔棋结果：-1(未决定),0(不同意),1(同意)
+
+	// 和棋相关
+	draw_requested  int // 是否有玩家要求和棋：0(没有),1(有)
+	draw_agreed		int // 和棋结果：-1(未决定),0(不同意),1(同意)
+
+	// 认输相关
+	lose_requested  int // 哪个玩家认输了：-1(没有),0(白),1(黑)
+
+	// 棋局记录相关
+	composition 			*stack.Stack	// 棋局栈
+	composition_num			int				// composition的个数，即总共走了多少步。这个在行棋完成期进行更新
 }
 
 func NewTable(module module.RPCModule, tableId int) *Table {
 	this := &Table{
-		module:        module,
-		stoped:        true,
-		seatMax:       2,
-		current_id:    0,//当前房间人数
-		current_frame: 0,//当前帧
-		sync_frame:    0,//上一帧
-		//composition:stack.NewStack(),//棋局
+		module:        		module,
+		stoped:        		true,
+		seatMax:       		2,
+		current_id:    		0,					//当前房间人数
+		current_frame: 		0,					//当前帧
+		sync_frame:    		0,					//上一帧
+		withdraw_requested: 0,
+		withdraw_agreed:	-1,
+		draw_requested: 	0,
+		draw_agreed:		-1,
+		lose_requested: 	-1,
+		start_match_step:   -1,
+		start_control_step: -1,
+		start_withdraw_step:-1,
+		start_draw_step:    -1,
+		control_time:       10000,
 	}
 	this.BaseTableImpInit(tableId, this)
 	this.QueueInit()
 	this.UnifiedSendMessageTableInit(this)
 	this.TimeOutTableInit(this, this, 60)
+
 	//游戏逻辑状态机
 	this.InitFsm()
 	this.seats = make([]*objects.Player, this.seatMax)
 	this.viewer = list.New()
+	this.composition = stack.NewStack()
+	this.composition.Push(NewChess("00000000000000000000000000000011111111111111111111",
+		                           "11111111111111111111000000000000000000000000000000",
+		                            "00000000000000000000000000000000000000000000000000"))
+	this.composition_num = 1
 
-	this.Register("SitDown", this.SitDown)
-	this.Register("GetLevel", this.getLevel)
-	this.Register("StartGame", this.StartGame)
-	this.Register("PauseGame", this.PauseGame)
-	this.Register("Stake", this.Stake)
-	this.Register("Login", this.login)
+	//this.Register("SitDown", this.SitDown)
+	//this.Register("GetLevel", this.getLevel)
+	//this.Register("StartGame", this.StartGame)
+	//this.Register("PauseGame", this.PauseGame)
+	//this.Register("Stake", this.Stake)
+	this.Register("Login", this.Login)
+
+	this.Register("PlayOneTurn", this.PlayOneTurn)
+	this.Register("Withdraw", this.Withdraw)
+	this.Register("WithdrawDecided", this.WithdrawDecided)
+	this.Register("Draw", this.Draw)
+	this.Register("DrawDecided", this.DrawDecided)
+	this.Register("Lose", this.Lose)
+
 
 	for indexSeat, _ := range this.seats {
 		this.seats[indexSeat] = objects.NewPlayer(indexSeat)
@@ -94,9 +137,9 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 	return this
 }
 func (this *Table) GetModule() module.RPCModule {
-
 	return this.module
 }
+
 func (this *Table) GetSeats() []room.BasePlayer {
 	m := make([]room.BasePlayer, len(this.seats))
 	for i, seat := range this.seats {
@@ -104,6 +147,7 @@ func (this *Table) GetSeats() []room.BasePlayer {
 	}
 	return m
 }
+
 func (this *Table) GetViewer() *list.List {
 	return this.viewer
 }
@@ -128,6 +172,7 @@ func (this *Table) VerifyAccessAuthority(userId string, bigRoomId string) bool {
 	}
 	return true
 }
+
 func (this *Table) AllowJoin() bool {
 	this.writelock.Lock()
 	ready := true
@@ -152,56 +197,46 @@ func (this *Table) AllowJoin() bool {
 func (this *Table) OnCreate() {
 	this.BaseTableImp.OnCreate()
 	this.ResetTimeOut()
-	//log.Debug("Table", "OnCreate")
+	log.Debug("Table", "OnCreate")
 	if this.stoped {
 		this.stoped = false
 		timewheel.GetTimeWheel().AddTimer(1000*time.Millisecond, nil, this.Update)
-		//go func() {
-		//	//这里设置为500ms
-		//	tick := time.NewTicker(1000 * time.Millisecond)
-		//	defer func() {
-		//		tick.Stop()
-		//	}()
-		//	for !this.stoped {
-		//		select {
-		//		case <-tick.C:
-		//			this.Update(nil)
-		//		}
-		//	}
-		//}()
 	}
 }
+
 func (this *Table) OnStart() {
 	log.Debug("Table", "OnStart")
 	for _, player := range this.seats {
 		player.Score=1000
-		//player.Weight = 0
-		//player.Target = 0
-		//player.Stake = false
 	}
-	//将游戏状态设置到空闲期
-	this.fsm.Call(MatchPeriodEvent)
-	this.step=0
+	// 将游戏状态设置到控制器
+	this.fsm.Call(ControlPeriodEvent)
+	// this.start_match_step=0
 	this.current_frame = 0
 	this.sync_frame = 0
 	this.BaseTableImp.OnStart()
 }
+
+
 func (this *Table) OnResume() {
 	this.BaseTableImp.OnResume()
 	log.Debug("Table", "OnResume")
-	this.NotifyResume()
+	//this.NotifyResume()
 }
 func (this *Table) OnPause() {
 	this.BaseTableImp.OnPause()
 	log.Debug("Table", "OnPause")
-	this.NotifyPause()
+	//this.NotifyPause()
 }
+
+
+
 func (this *Table) OnStop() {
 	this.BaseTableImp.OnStop()
 	log.Debug("Table", "OnStop")
 	//将游戏状态设置到空档期
 	this.fsm.Call(VoidPeriodEvent)
-	this.NotifyStop()
+	//this.NotifyStop()
 	this.ExecuteCallBackMsg() //统一发送数据到客户端
 	for _, player := range this.seats {
 		player.OnUnBind()
@@ -213,15 +248,19 @@ func (this *Table) OnStop() {
 		this.viewer.Remove(e)
 	}
 }
+
 func (this *Table) OnDestroy() {
 	this.BaseTableImp.OnDestroy()
 	log.Debug("BaseTableImp", "OnDestroy")
 	this.stoped = true
 }
 
+/*
 func (self *Table) onGameOver() {
 	self.Finish()
 }
+
+ */
 
 /**
 牌桌主循环
@@ -240,6 +279,7 @@ func (self *Table) Update(arge interface{}) {
 			self.StateSwitch()
 		}
 
+		/*
 		ready := true
 		for _, seat := range self.GetSeats() {
 			if seat.Bind() == false {
@@ -252,7 +292,7 @@ func (self *Table) Update(arge interface{}) {
 			//有玩家离开了牌桌,牌桌退出
 			self.Finish()
 		}
-
+		*/
 	} else if self.State() == room.Initialized {
 		ready := true
 		for _, seat := range self.GetSeats() {
@@ -284,6 +324,7 @@ func (self *Table) Exit(session gate.Session) error {
 	return nil
 }
 
+/*
 func (self *Table) getSeatsMap() []map[string]interface{} {
 	m := make([]map[string]interface{}, len(self.seats))
 	for i, player := range self.seats {
@@ -294,16 +335,6 @@ func (self *Table) getSeatsMap() []map[string]interface{} {
 	return m
 }
 
-/**
-玩家获取关卡信息
-*/
-func (self *Table) getLevel(session gate.Session) {
-	playerImp := self.GetBindPlayer(session)
-	if playerImp != nil {
-		player := playerImp.(*objects.Player)
-		player.OnRequest(session)
-		player.OnSitDown()
-	}
-}
+ */
 
 
