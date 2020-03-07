@@ -37,6 +37,7 @@ func (self *Jump) Version() string {
 func (self *Jump) GetFullServerId() string {
 	return self.GetServerId()
 }
+
 func (self *Jump) usableTable(table room.BaseTable) bool {
 	return table.AllowJoin()
 }
@@ -45,8 +46,6 @@ func (self *Jump) newTable(module module.RPCModule, tableId int) (room.BaseTable
 	table := NewTable(module, tableId)
 	return table, nil
 }
-
-
 
 func (self *Jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 	self.BaseModule.OnInit(self, app, settings, server.Metadata(map[string]string{
@@ -75,14 +74,12 @@ func (self *Jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 }
 
 func (self *Jump) Run(closeSig chan bool) {
-
 }
 
 func (self *Jump) OnDestroy() {
 	//一定别忘了关闭RPC
 	self.GetServer().OnDestroy()
 }
-
 
 /**
 检查参数是否存在
@@ -133,7 +130,6 @@ func (self *Jump) HDGetUsableTable(session gate.Session, msg map[string]interfac
 /**
 查找可用座位
 */
-
 func (self *Jump) getUsableTable(session gate.Session,msg map[string]interface{}) (map[string]interface{}, string) {
 	table, err := self.room.GetUsableTable()
 	if err == nil {
@@ -241,24 +237,6 @@ func (self *Jump) exit(session gate.Session, msg map[string]interface{}) (string
 		return "", err.Error()
 	}
 }
-
-/*
-func (self *Jump) sitdown(session gate.Session, msg map[string]interface{}) (string, string) {
-	bigRoomId := session.Get("BigRoomId")
-	if bigRoomId == "" {
-		return "", "fail"
-	}
-	table, err := self.GetTableByBigRoomId(bigRoomId)
-	if err != nil {
-		return "", err.Error()
-	}
-	err = table.PutQueue("SitDown", session)
-	if err != nil {
-		return "", err.Error()
-	}
-	return "success", ""
-}
-*/
 
 //player绑定
 func (self *Jump) login(session gate.Session, msg map[string]interface{}) (string, string) {

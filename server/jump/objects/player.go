@@ -35,16 +35,14 @@ func NewPlayer(SeatIndex int) *Player {
 
 	return this
 }
-//map转json
 
+//map转json
 func (this *Player) Serializable() ([]byte, error) {
 
 	return json.Marshal(this.SerializableMap())
 }
 
-
 //转化为map
-
 func (this *Player) SerializableMap() map[string]interface{} {
 	rid := ""
 	if this.Session() != nil {
@@ -59,3 +57,56 @@ func (this *Player) SerializableMap() map[string]interface{} {
 	}
 }
 
+// 计算积分的放大系数K
+func (this *Player) K() int {
+	switch {
+	case this.Score < 1000:
+		return 	120
+	case this.Score < 1399 && this.Score >= 1000:
+		return 60
+	case this.Score < 1799 && this.Score >= 1400:
+		return 30
+	case this.Score < 1999 && this.Score >= 1800:
+		return 25
+	case this.Score < 2199 && this.Score >= 2000:
+		return 20
+	case this.Score < 2399 && this.Score >= 2200:
+		return 15
+	case this.Score >= 2400:
+		return 10
+	}
+	return 0
+}
+
+// 计算玩家的等级
+func (this *Player) GetLevel() int8 {
+	switch {
+	case this.Score < 1100:
+		return 	0
+	case this.Score < 1200 && this.Score >= 1100:
+		return 1
+	case this.Score < 1300 && this.Score >= 1200:
+		return 2
+	case this.Score < 1400 && this.Score >= 1300:
+		return 3
+	case this.Score < 1500 && this.Score >= 1400:
+		return 4
+	case this.Score < 1600 && this.Score >= 1500:
+		return 5
+	case this.Score < 1700 && this.Score >= 1600:
+		return 6
+	case this.Score < 1800 && this.Score >= 1700:
+		return 7
+	case this.Score < 2000 && this.Score >= 1800:
+		return 8
+	case this.Score < 2200 && this.Score >= 2000:
+		return 9
+	case this.Score < 2400 && this.Score >= 2200:
+		return 10
+	case this.Score < 2600 && this.Score >= 2400:
+		return 11
+	case this.Score >= 2600:
+		return 12
+	}
+	return 0
+}
