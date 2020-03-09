@@ -113,33 +113,31 @@ func (this *Table) InitFsm() {
 		fmt.Println("进入结算期")
 
 		// 先确定胜负方是谁，如果winner和loser都是-1则为平局
-		winner := -1
-		loser := -1
 		if this.lose_requested != -1 { // 某方认输，通知另一方这个消息，再结算
-			loser = this.lose_requested
-			if loser == 0 {
-				winner = 1
-			} else if loser == 1 {
-				winner = 0
+			this.loser = this.lose_requested
+			if this.loser == 0 {
+				this.winner = 1
+			} else if this.loser == 1 {
+				this.winner = 0
 			}
 			this.NotifyTheOtherSideLost()
 		} else if this.draw_agreed == 1 { // 非控制方同意和棋请求，通知另一方这个消息，再结算
 			this.NotifyDrawAgreed()
-		}
+		} // 剩下的情况就是系统判断
 
 		// 计算分数-平局
 		NewScoreWhite := int64(0)
 		NewScoreBlack := int64(0)
 		ExpWhite := 1/(math.Pow(10, float64((this.seats[1].Score-this.seats[0].Score)/400))+1)
 		ExpBlack := 1/(math.Pow(10, float64((this.seats[0].Score-this.seats[1].Score)/400))+1)
-		if winner == -1 || loser == -1 {
+		if this.winner == -1 || this.loser == -1 { // 和棋
 			// 计算白方的分数
 			NewScoreWhite = this.seats[0].Score /*OldScoreWhite*/ + int64((float64(this.seats[0].K())) * (0.5-ExpWhite))
 			NewScoreBlack = this.seats[1].Score /*OldScoreBlack*/ + int64((float64(this.seats[1].K())) * (0.5-ExpBlack))
 			this.seats[0].Result = 2
 			this.seats[1].Result = 2
 		} else {
-			if winner == 0 { // 白方赢
+			if this.winner == 0 { // 白方赢
 				NewScoreWhite = this.seats[0].Score /*OldScoreWhite*/ + int64((float64(this.seats[0].K())) * (1.0-ExpWhite))
 				NewScoreBlack = this.seats[1].Score /*OldScoreBlack*/ + int64((float64(this.seats[1].K())) * (0.0-ExpBlack))
 				this.seats[0].Result = 0
@@ -225,6 +223,8 @@ func (this *Table) StateSwitch() {
 				this.draw_requested = 0
 				this.fsm.Call(DrawPeriodEvent)
 			} else if this.lose_requested != -1 { // 某方玩家认输
+				this.fsm.Call(SettlementPeriodEvent)
+			} else if this.winner != -1 && this.loser != -1 { // 系统判定游戏结束
 				this.fsm.Call(SettlementPeriodEvent)
 			}
 		}

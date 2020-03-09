@@ -78,6 +78,10 @@ type Table struct {
 	// 认输相关
 	lose_requested  int // 哪个玩家认输了：-1(没有),0(白),1(黑)
 
+	// 游戏结果
+	winner	int		// 胜方
+	loser   int		// 负方
+
 	// 棋局记录相关
 	composition 			*stack.Stack	// 棋局栈
 	composition_num			int				// composition的个数，即总共走了多少步。这个在行棋完成期进行更新
@@ -103,6 +107,8 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 		start_withdraw_step:-1,
 		start_draw_step:    -1,
 		control_time:       10000,
+		winner:				-1,
+		loser:				-1,
 	}
 	this.BaseTableImpInit(tableId, this)
 	this.QueueInit()

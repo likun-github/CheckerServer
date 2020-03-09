@@ -285,6 +285,10 @@ func (self *Jump) control(session gate.Session, msg map[string]interface{}) (str
 		if err != nil {
 			return "", err.Error()
 		}
+		if table.fsm.getState() != ControlPeriod { // 玩家在非控制期不知怎么地给服务器发了走子信息
+			fmt.Print("非控制期发送的走子信息不予处理")
+			return "fail",""
+		}
 		err = table.PlayOneTurn(session, composition)
 		if err != nil {
 			return "", err.Error()

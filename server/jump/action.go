@@ -23,6 +23,7 @@ import (
 	"github.com/liangdas/mqant-modules/room"
 	"github.com/liangdas/mqant/gate"
 	"strconv"
+	"CheckerServer/server/common/moveGeneration"
 )
 //坐下
 /*
@@ -126,21 +127,6 @@ func (self *Table) Join(session gate.Session/*, userinfo *model.UserInfo*/) erro
 	return nil
 }
 
-/**
-玩家押注
-*/
-/*
-func (self *Table) Stake(session gate.Session, target int64) error {
-	playerImp := self.GetBindPlayer(session)
-	if playerImp != nil {
-		player := playerImp.(*objects.Player)
-		player.OnRequest(session)
-		player.OnSitDown()
-		return nil
-	}
-	return nil
-}
- */
 
 //角色绑定
 
@@ -183,6 +169,24 @@ func (self *Table) PlayOneTurn(session gate.Session, composition *Chess) error {
 
 	self.composition.Push(composition)
 	fmt.Println("控制方走子加入棋局栈")
+
+	// 判断游戏是否结束
+	// 初始化bitboard
+	W,_ := strconv.ParseInt(composition.white, 10, 64)
+	B,_ := strconv.ParseInt(composition.black, 10, 64)
+	K,_ := strconv.ParseInt(composition.king, 10, 64)
+	var cb = &moveGeneration.CheckerBitboard{W:uint64(W),B:uint64(B),K:uint64(K)}
+	// 初始化padded array board
+	moveGeneration.BitboardToPaddedArrayBoard(cb)
+
+	if cb.GetMoversWhite() == 0 && cb.GetJumpersWhite() == 0 { // 白子没法走，黑子胜
+		self.winner = 1
+		self.loser = 0
+	} else if cb.GetMoversBlack() == 0 && cb.GetJumpersBlack() == 0 { // 黑子没法走，白子胜
+		self.winner = 0
+		self.loser = 1
+	}
+
 	return nil
 }
 
