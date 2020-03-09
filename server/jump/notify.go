@@ -91,6 +91,21 @@ func (self *Table) NotifyWithdrawRequested() {
 }
 
 /**
+通知非控制方玩家悔棋超时，直接认为非控制方玩家同意悔棋
+返回空值
+*/
+func (self *Table) NotifyWithdrawTimeout() {
+	withdraw_timeout_player := -1
+	if self.currentPlayer == 0 {
+		withdraw_timeout_player = 1
+	} else {
+		withdraw_timeout_player = 0
+	}
+	withdraw_timeout_json,_ := json.Marshal(nil)
+	self.seats[withdraw_timeout_player].Session().Send("WithdrawTimeout", withdraw_timeout_json)
+}
+
+/**
 通知控制方玩家悔棋结果，不论结果如何，控制方玩家继续走子
 返回非控制方玩家的悔棋结果，包括：withdraw_agreed
 */
@@ -118,6 +133,21 @@ func (self *Table) NotifyDrawRequested() {
 	}
 	draw_requested_json,_ := json.Marshal(draw_requested)
 	self.seats[draw_requeseted_player].Session().Send("DrawRequested", draw_requested_json)
+}
+
+/**
+通知非控制方玩家和棋超时，直接认为非控制方玩家同意和棋
+返回空值
+*/
+func (self *Table) NotifyDrawTimeout() {
+	draw_timeout_player := -1
+	if self.currentPlayer == 0 {
+		draw_timeout_player = 1
+	} else {
+		draw_timeout_player = 0
+	}
+	draw_timeout_json,_ := json.Marshal(nil)
+	self.seats[draw_timeout_player].Session().Send("DrawTimeout", draw_timeout_json)
 }
 
 /**
@@ -158,7 +188,7 @@ func (self *Table) NotifyTheOtherSideLost() {
 
 /**
 通知所有玩家游戏结果
-返回两个玩家的信息，包括：userid, score, level, result:0(输),1(赢)
+返回两个玩家的信息，包括：userid, score, level, result:0(输),1(赢),2（平）
 */
 func (self *Table) NotifyResult() {
 	game_result := map[string]interface{} {

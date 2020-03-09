@@ -57,6 +57,10 @@ func (this *Table) InitFsm() {
 
 	this.Withdraw2ControlHandler = FSMHandler(func() FSMState {
 		fmt.Println("悔棋期转控制期")
+		if this.withdraw_timeout == 1 { // 非控制方超时，通知非控制方这个消息
+			this.withdraw_timeout = 0
+			this.NotifyWithdrawTimeout()
+		}
 
 		if this.withdraw_agreed == 1 { // 非控制方同意悔棋
 			// 悔两步棋：非控制方玩家走的和控制方玩家走的
@@ -132,19 +136,26 @@ func (this *Table) InitFsm() {
 			// 计算白方的分数
 			NewScoreWhite = this.seats[0].Score /*OldScoreWhite*/ + int64((float64(this.seats[0].K())) * (0.5-ExpWhite))
 			NewScoreBlack = this.seats[1].Score /*OldScoreBlack*/ + int64((float64(this.seats[1].K())) * (0.5-ExpBlack))
+			this.seats[0].Result = 2
+			this.seats[1].Result = 2
 		} else {
 			if winner == 0 { // 白方赢
 				NewScoreWhite = this.seats[0].Score /*OldScoreWhite*/ + int64((float64(this.seats[0].K())) * (1.0-ExpWhite))
 				NewScoreBlack = this.seats[1].Score /*OldScoreBlack*/ + int64((float64(this.seats[1].K())) * (0.0-ExpBlack))
+				this.seats[0].Result = 0
+				this.seats[1].Result = 1
 			} else { // 黑方赢
 				NewScoreWhite = this.seats[0].Score /*OldScoreWhite*/ + int64((float64(this.seats[0].K())) * (0.0-ExpWhite))
 				NewScoreBlack = this.seats[1].Score /*OldScoreBlack*/ + int64((float64(this.seats[1].K())) * (1.0-ExpBlack))
+				this.seats[0].Result = 1
+				this.seats[1].Result = 0
 			}
 		}
 
 		// 修改table里黑白玩家的积分以及等级数据，一会儿发的消息里的数据是从这里拿的
 		this.seats[0].Score = NewScoreWhite
 		this.seats[0].Level = this.seats[0].GetLevel()
+
 		this.seats[1].Score = NewScoreBlack
 		this.seats[1].Level = this.seats[1].GetLevel()
 
@@ -222,7 +233,7 @@ func (this *Table) StateSwitch() {
 		this.fsm.Call(ControlPeriodEvent)
 
 	case WithdrawPeriod: // 非控制方玩家需在规定时间内决定是否同意悔棋，否则直接认为同意
-		if (this.current_frame - this.start_withdraw_step) > 1000 { // 非控制方玩家决定时间超时，直接认为同意悔棋
+		if (this.current_frame - this.start_withdraw_step) > 15 { // 非控制方玩家决定时间超时，直接认为同意悔棋
 			this.withdraw_agreed = 1
 			this.fsm.Call(ControlPeriodEvent)
 		} else { // 非控制方在规定时间内决定悔棋结果

@@ -84,5 +84,8 @@ func (this *UserInfoDao)ModifyScoreNLevel(id int64, score int64, level int8) err
 	}
 	u.Score = score
 	u.Level = level
+	if !this.Update(u){
+		return errors.New("update score and level failed")
+	}
 	return nil
 }

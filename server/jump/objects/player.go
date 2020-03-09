@@ -15,7 +15,7 @@ type Player struct {
 	Level      int8 			//段位
 	Username   string			//用户昵称
 	Avatar     string			//用户头像
-	Result  	int				//游戏结果:-1(还没出),0(输),1(赢)
+	Result  	int				//游戏结果:-1(还没出),0(赢),1(输),2(平)
 
 }
 //新建用户，基本属性

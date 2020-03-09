@@ -68,10 +68,12 @@ type Table struct {
 	// 悔棋相关
 	withdraw_requested  int // 是否有玩家要求悔棋：0(没有),1(有)
 	withdraw_agreed		int // 悔棋结果：-1(未决定),0(不同意),1(同意)
+	withdraw_timeout    int // 悔棋超时：0(未超时),1(超时)
 
 	// 和棋相关
 	draw_requested  int // 是否有玩家要求和棋：0(没有),1(有)
 	draw_agreed		int // 和棋结果：-1(未决定),0(不同意),1(同意)
+	draw_timeout    int // 和棋超时：0(未超时),1(超时)
 
 	// 认输相关
 	lose_requested  int // 哪个玩家认输了：-1(没有),0(白),1(黑)
@@ -91,8 +93,10 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 		sync_frame:    		0,					//上一帧
 		withdraw_requested: 0,
 		withdraw_agreed:	-1,
+		withdraw_timeout: 	0,
 		draw_requested: 	0,
 		draw_agreed:		-1,
+		draw_timeout:		0,
 		lose_requested: 	-1,
 		start_match_step:   -1,
 		start_control_step: -1,
