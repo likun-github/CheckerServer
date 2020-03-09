@@ -233,7 +233,7 @@ func (this *Table) StateSwitch() {
 		this.fsm.Call(ControlPeriodEvent)
 
 	case WithdrawPeriod: // 非控制方玩家需在规定时间内决定是否同意悔棋，否则直接认为同意
-		if (this.current_frame - this.start_withdraw_step) > 15 { // 非控制方玩家决定时间超时，直接认为同意悔棋
+		if (this.current_frame - this.start_withdraw_step) > 150000 { // 非控制方玩家决定时间超时，直接认为同意悔棋
 			this.withdraw_agreed = 1
 			this.fsm.Call(ControlPeriodEvent)
 		} else { // 非控制方在规定时间内决定悔棋结果
@@ -243,7 +243,7 @@ func (this *Table) StateSwitch() {
 		}
 
 	case DrawPeriod: // 非控制方玩家需在规定时间内决定是否同意和棋，否则直接认为同意
-		if (this.current_frame - this.start_draw_step) > 10 { // 非控制方玩家决定时间超时，直接认为同意和棋
+		if (this.current_frame - this.start_draw_step) > 1500000 { // 非控制方玩家决定时间超时，直接认为同意和棋
 			// 直接进入结算期
 			this.fsm.Call(ControlPeriodEvent)
 		} else {
