@@ -172,9 +172,9 @@ func (self *Table) PlayOneTurn(session gate.Session, composition *Chess) error {
 
 	// 判断游戏是否结束
 	// 初始化bitboard
-	W,_ := strconv.ParseInt(composition.white, 10, 64)
-	B,_ := strconv.ParseInt(composition.black, 10, 64)
-	K,_ := strconv.ParseInt(composition.king, 10, 64)
+	W,_ := strconv.ParseInt(composition.white, 2, 64)
+	B,_ := strconv.ParseInt(composition.black, 2, 64)
+	K,_ := strconv.ParseInt(composition.king, 2, 64)
 	var cb = &moveGeneration.CheckerBitboard{W:uint64(W),B:uint64(B),K:uint64(K)}
 	// 初始化padded array board
 	moveGeneration.BitboardToPaddedArrayBoard(cb)
