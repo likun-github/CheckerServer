@@ -138,9 +138,10 @@ func GetUseridHandler(writer http.ResponseWriter, request *http.Request) {
 	//如果无此openid，新建用户
 	if userInfo==nil{
 		user := new(model.UserInfo)
-		user.WxOpenId=openid
-		user.Status=0
-		user.Level=1
+		user.WxOpenId = openid
+		user.Status= 0
+		user.Level= 0
+		user.Score = 1000
 		if !infoDao.Insert(user) {
 			log.Info("db error")
 		}
