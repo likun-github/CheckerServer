@@ -70,6 +70,7 @@ func (self *Jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 	self.GetServer().RegisterGO("HD_Draw", self.draw)//和棋
 	self.GetServer().RegisterGO("HD_DrawDecided", self.drawdecided)//和棋结果确定
 	self.GetServer().RegisterGO("HD_Lose", self.lose)//认输
+	self.GetServer().RegisterGO("HD_Collect", self.collect)//收藏
 
 }
 
@@ -391,7 +392,27 @@ func (self *Jump) lose(session gate.Session, msg map[string]interface{}) (string
 		return "success", ""
 	}
 }
-
+// 收藏本局
+func (self *Jump) collect(session gate.Session, msg map[string]interface{}) (string, string) {
+	if collectCheckerColor, ok := msg["checker_color"]; !ok {
+		return "", "Who sent the lose request?! Tell me your checker color!"
+	} else {
+		bigRoomId := session.Get("BigRoomId")
+		if bigRoomId == "" {
+			return "", "fail"
+		}
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		collect_checker_color := int(collectCheckerColor.(float64))
+		err = table.PutQueue("Collect", session,collect_checker_color)
+		if err != nil {
+			return "", err.Error()
+		}
+		return "success", ""
+	}
+}
 
 
 

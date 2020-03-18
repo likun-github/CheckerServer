@@ -82,6 +82,10 @@ type Table struct {
 	winner	int		// 胜方
 	loser   int		// 负方
 
+	// 收藏相关
+	collect_requested_white	int64	// 白方是否收藏本局：若收藏，则为白方userid；若不收藏，则为-1
+	collect_requested_black	int64	// 黑方是否收藏本局：若收藏，则为黑方userid；若不收藏，则为-1
+
 	// 棋局记录相关
 	composition 			*stack.Stack	// 棋局栈
 	composition_num			int				// composition的个数，即总共走了多少步。这个在行棋完成期进行更新
@@ -109,6 +113,8 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 		control_time:       10000,
 		winner:				-1,
 		loser:				-1,
+		collect_requested_white:	-1,
+		collect_requested_black:	-1,
 	}
 	this.BaseTableImpInit(tableId, this)
 	this.QueueInit()

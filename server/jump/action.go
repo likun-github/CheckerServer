@@ -265,3 +265,22 @@ func (self *Table) Lose(session gate.Session,  lose_checker_color int) error {
 
 	return nil
 }
+
+// 某方收藏本局
+func (self *Table) Collect(session gate.Session,  collect_checker_color int) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
+	}
+
+	if collect_checker_color == 0 { // 白方收藏本局
+		self.collect_requested_white = self.seats[0].UserId
+	} else if collect_checker_color == 1 { // 黑方收藏本局
+		self.collect_requested_white = self.seats[0].UserId
+	}
+
+	return nil
+}

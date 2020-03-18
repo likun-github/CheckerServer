@@ -11,7 +11,7 @@ type UserInfo struct {
 	QQName string `xorm:"varchar(32)  'userQQName'"`//QQ昵称
 	QQImg string  `xorm:"varchar(128)  'userQQImg'"`//QQ头像
 	Type int8 `xorm:"tinyint  'userType'"`//认证类型
-	//Pwd string `xorm:"varchar(40)  'userPwd'"`
+	Pwd string `xorm:"varchar(40)  'userPwd'"`
 	Status int8  `xorm:"tinyint  'userStatus'"`//用户状态，0代表仅获取openid,1代表获取基本用户信息
 	Score int64 `xorm:"bigint notnull 'userScore'"`//分数
 	Level int8 `xorm:"tinyint notnull 'userLevel'"`//关卡

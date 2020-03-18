@@ -120,7 +120,7 @@ func (this *Table) InitFsm() {
 			} else if this.loser == 1 {
 				this.winner = 0
 			}
-			this.NotifyTheOtherSideLost()
+			this.NotifyOpponentLost()
 		} else if this.draw_agreed == 1 { // 非控制方同意和棋请求，通知另一方这个消息，再结算
 			this.NotifyDrawAgreed()
 		} // 剩下的情况就是系统判断
@@ -169,6 +169,7 @@ func (this *Table) InitFsm() {
 		}
 
 		this.NotifyResult() // 通知所有玩家游戏结果
+
 		return SettlementPeriod
 	})
 
@@ -255,5 +256,14 @@ func (this *Table) StateSwitch() {
 		}
 
 	case SettlementPeriod:
+		// 是否有玩家需要收藏本局
+		if this.collect_requested_white != -1 { // 白方要求收藏本局
+			// 写入数据库
+			this.collect_requested_white = -1
+		}
+
+		this.seats[0].OnUnBind()
+		this.seats[1].OnUnBind()
+		this.Finish()
 	}
 }

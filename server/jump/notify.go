@@ -59,11 +59,10 @@ func (self *Table) NotifyMatchFinish() {
 
 /**
 通知非控制方玩家走子完成，轮到其走子
-返回控制方玩家的走子信息，包括：current_player(用于验证), composition
+返回控制方玩家的走子信息，包括：composition
 */
 func (self *Table) NotifyUpdateComposition() {
 	new_composition := map[string]interface{} {
-		"current_player": 	self.currentPlayer,
 		"W": self.composition.Top().(*Chess).white,
 		"B": self.composition.Top().(*Chess).black,
 		"K": self.composition.Top().(*Chess).king,
@@ -83,11 +82,12 @@ func (self *Table) NotifyWithdrawRequested() {
 	} else {
 		withdraw_requeseted_player = 0
 	}
+	/*
 	withdraw_requested := map[string]interface{} {
 		"withdraw_requeseted_player": withdraw_requeseted_player,
 	}
-	withdraw_requested_json,_ := json.Marshal(withdraw_requested)
-	self.seats[withdraw_requeseted_player].Session().Send("WithdrawRequested", withdraw_requested_json)
+	withdraw_requested_json,_ := json.Marshal(withdraw_requested)*/
+	self.seats[withdraw_requeseted_player].Session().Send("WithdrawRequested", nil)
 }
 
 /**
@@ -119,7 +119,7 @@ func (self *Table) NotifyWithdrawDecided() {
 
 /**
 通知非控制方玩家控制方玩家求和棋，轮到其判断是否同意
-返回非控制方玩家的索引，包括：draw_requeseted_player(用于验证)
+返回空值
 */
 func (self *Table) NotifyDrawRequested() {
 	draw_requeseted_player := -1
@@ -128,11 +128,13 @@ func (self *Table) NotifyDrawRequested() {
 	} else {
 		draw_requeseted_player = 0
 	}
+	/*
 	draw_requested := map[string]interface{} {
 		"draw_requeseted_player": draw_requeseted_player,
 	}
 	draw_requested_json,_ := json.Marshal(draw_requested)
-	self.seats[draw_requeseted_player].Session().Send("DrawRequested", draw_requested_json)
+	 */
+	self.seats[draw_requeseted_player].Session().Send("DrawRequested", nil)
 }
 
 /**
@@ -174,7 +176,7 @@ func (self *Table) NotifyDrawAgreed() {
 通知另一方玩家对方认输辽
 返回空值
 */
-func (self *Table) NotifyTheOtherSideLost() {
+func (self *Table) NotifyOpponentLost() {
 	the_other_side := -1
 	if(self.lose_requested == 0) { // 白方认输，通知黑方
 		the_other_side = 1
@@ -182,7 +184,7 @@ func (self *Table) NotifyTheOtherSideLost() {
 		the_other_side = 0
 	}
 	the_other_side_lost_json,_ := json.Marshal(nil)
-	self.seats[the_other_side].Session().Send("TheOtherSideLost", the_other_side_lost_json)
+	self.seats[the_other_side].Session().Send("OpponentLost", the_other_side_lost_json)
 	self.lose_requested = -1
 }
 
