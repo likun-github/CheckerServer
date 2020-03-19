@@ -88,6 +88,7 @@ func (self *Web) Run(closeSig chan bool) {
 
 
 		root.HandleFunc("/getinfo",GetInfoHandler)
+		root.HandleFunc("/updateUserNameNAvatar",UpdateUserNameNAvatarHandler)
 		root.HandleFunc("/getuserid",GetUseridHandler)
 		root.HandleFunc("/register",RegisterHandler)
 		root.HandleFunc("/ChessManual",ChessManualHandler)
@@ -114,6 +115,7 @@ func LoginHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 	fmt.Fprintf(writer, "login")
 }
+
 //根据code获取用户id，没有的新建用户
 func GetUseridHandler(writer http.ResponseWriter, request *http.Request) {
 	appsecret:="5ee539127cb87ad7294f491648bc401c"
@@ -160,6 +162,7 @@ func GetUseridHandler(writer http.ResponseWriter, request *http.Request) {
 
 
 }
+
 //根据用户id获取用户信息
 func GetInfoHandler(writer http.ResponseWriter, request *http.Request)  {
 	query := request.URL.Query()
@@ -170,10 +173,30 @@ func GetInfoHandler(writer http.ResponseWriter, request *http.Request)  {
 	j,_:=json.Marshal(u)
 	writer.WriteHeader(http.StatusOK)
 	fmt.Fprintf(writer, string(j))
-
-
-
 }
+
+// 根据用户userid找到相应的用户，然后更新其用户名及头像
+func UpdateUserNameNAvatarHandler (writer http.ResponseWriter, request *http.Request) {
+	// 数据解析
+	query := request.URL.Query()
+	userid,_:=strconv.Atoi(query["userid"][0])
+	name:=query["name"][0]
+	avatar:=query["avatar"][0]
+	// 根据userid查找相应的用户
+	infoDao:=dao.NewUserInfoDao()
+	userInfo := infoDao.SelectById(int64(userid))
+	// 更新微信名及头像
+	userInfo.WxName=name
+	userInfo.WXImg=avatar
+	if !infoDao.Update(userInfo){
+		log.Info("db error")
+	}
+	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
+	j,_:=json.Marshal(u)
+	fmt.Fprintf(writer, string(j))
+}
+
+
 //添加用户信息
 func RegisterHandler(writer http.ResponseWriter, request *http.Request) {
 	query := request.URL.Query()
@@ -192,8 +215,6 @@ func RegisterHandler(writer http.ResponseWriter, request *http.Request) {
 	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
 	j,_:=json.Marshal(u)
 	fmt.Fprintf(writer, string(j))
-
-
 }
 
 
@@ -212,6 +233,7 @@ func ChessManualHandler(writer http.ResponseWriter, request *http.Request) {
 
 
 }
+
 func HomeHandler(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	for k,_ := range vars {
