@@ -89,6 +89,7 @@ func (self *Web) Run(closeSig chan bool) {
 
 		root.HandleFunc("/getinfo",GetInfoHandler)
 		root.HandleFunc("/updateUserNameNAvatar",UpdateUserNameNAvatarHandler)
+		root.HandleFunc("/getUserScoreNLevel",GetUserScoreNLevelHandler)
 		root.HandleFunc("/getuserid",GetUseridHandler)
 		root.HandleFunc("/register",RegisterHandler)
 		root.HandleFunc("/ChessManual",ChessManualHandler)
@@ -156,11 +157,7 @@ func GetUseridHandler(writer http.ResponseWriter, request *http.Request) {
 		u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
 		j,_:=json.Marshal(u)
 		fmt.Fprintf(writer, string(j))
-
 	}
-
-
-
 }
 
 //根据用户id获取用户信息
@@ -196,6 +193,19 @@ func UpdateUserNameNAvatarHandler (writer http.ResponseWriter, request *http.Req
 	fmt.Fprintf(writer, string(j))
 }
 
+// 根据用户userid找到相应的用户，然后获取其积分及段位
+func GetUserScoreNLevelHandler (writer http.ResponseWriter, request *http.Request) {
+	// 数据解析
+	query := request.URL.Query()
+	userid,_:=strconv.Atoi(query["userid"][0])
+	// 根据userid查找相应的用户
+	infoDao:=dao.NewUserInfoDao()
+	userInfo := infoDao.SelectById(int64(userid))
+	// 返回用户积分及段位信息
+	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
+	j,_:=json.Marshal(u)
+	fmt.Fprintf(writer, string(j))
+}
 
 //添加用户信息
 func RegisterHandler(writer http.ResponseWriter, request *http.Request) {
