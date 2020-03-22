@@ -259,11 +259,20 @@ func (this *Table) StateSwitch() {
 		// 是否有玩家需要收藏本局
 		if this.collect_requested_white != -1 { // 白方要求收藏本局
 			// 写入数据库
+			collectionDao := dao.NewCollectionDao()
+			result := collectionDao.InsertCollection(this.collect_requested_white, int8(this.composition.Size()), this.composition)
+			// 通知用户是否收藏成功
+			this.NotifyCollectionResult(0,result)
 			this.collect_requested_white = -1
 		}
+		if this.collect_requested_black != -1 { // 黑方要求收藏本局
+			// 写入数据库
+			collectionDao := dao.NewCollectionDao()
+			result := collectionDao.InsertCollection(this.collect_requested_black, int8(this.composition.Size()), this.composition)
+			// 通知用户是否收藏成功
+			this.NotifyCollectionResult(1,result)
+			this.collect_requested_black = -1
+		}
 
-		this.seats[0].OnUnBind()
-		this.seats[1].OnUnBind()
-		this.Finish()
 	}
 }

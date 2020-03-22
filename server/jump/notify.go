@@ -63,7 +63,7 @@ func (self *Table) NotifyMatchFinish() {
 */
 func (self *Table) NotifyUpdateComposition() {
 	new_composition := map[string]interface{} {
-		"W": self.composition.Top().(*Chess).white,
+		"W": self.composition.Top().(*Chess).White,
 		"B": self.composition.Top().(*Chess).black,
 		"K": self.composition.Top().(*Chess).king,
 	}
@@ -206,6 +206,18 @@ func (self *Table) NotifyResult() {
 	}
 	game_result_json,_ := json.Marshal(game_result)
 	self.NotifyCallBackMsg("GameEnd", game_result_json)
+}
+
+/**
+通知玩家收藏结果
+返回收藏结果，result: true(成功),false（失败）
+*/
+func (self *Table) NotifyCollectionResult(index int, result bool) {
+	collection_result := map[string]interface{} {
+		"result": 	result,
+	}
+	collection_result_json,_ := json.Marshal(collection_result)
+	self.seats[index].Session().Send("CollectionResult", collection_result_json)
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////……框架，谁都别动
 
