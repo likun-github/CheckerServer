@@ -36,6 +36,21 @@ func (self *Table) NotifyJoin(player *objects.Player) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////大爷我写的……
 /**
+通知决定再来一局的玩家开始匹配
+返回空值
+*/
+func (self *Table) NotifyStartMatching() {
+	again_player := -1
+	if self.game_finished_action_white == 1 { // 白方决定再来一局
+		again_player = 0
+	}
+	if self.game_finished_action_black == 1 { // 黑方决定再来一局
+		again_player = 1
+	}
+	start_matching_json,_ := json.Marshal(nil)
+	self.seats[again_player].Session().Send("StartMatching",start_matching_json)
+}
+/**
 通知所有玩家匹配完成，游戏开始
 返回整桌的玩家信息，包括：userid, name, avatar, score, level
 */

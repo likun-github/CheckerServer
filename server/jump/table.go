@@ -49,15 +49,18 @@ type Table struct {
 	control_time 			int64		// 玩家的控制时间，是个变量。开始时为 s，走了 步后为 s。
 	writelock               sync.Mutex
 
-	MatchPeriodHandler         FSMHandler//空挡转匹配完成
-	Match2ControlHandler       FSMHandler//匹配完成到控制期
-	Control2WithdrawHandler    FSMHandler//控制期转悔棋期
-	Withdraw2ControlHandler    FSMHandler//悔棋期转控制期
-	Control2DrawHandler        FSMHandler//控制期转求和期
-	Draw2ControlHandler        FSMHandler//求和期转控制期
-	Control2PlayFinishHandler  FSMHandler//控制期转行棋完成期
-	PlayFinish2ControlHandler  FSMHandler//行棋完成期转控制期
-	SettlementPeriodHandler    FSMHandler//控制到结算期
+	MatchPeriodHandler         		FSMHandler//空挡转匹配完成
+	Match2ControlHandler       		FSMHandler//匹配完成到控制期
+	Control2WithdrawHandler    		FSMHandler//控制期转悔棋期
+	Withdraw2ControlHandler    		FSMHandler//悔棋期转控制期
+	Control2DrawHandler        		FSMHandler//控制期转求和期
+	Draw2ControlHandler        		FSMHandler//求和期转控制期
+	Control2PlayFinishHandler  		FSMHandler//控制期转行棋完成期
+	PlayFinish2ControlHandler  		FSMHandler//行棋完成期转控制期
+	SettlementPeriodHandler    		FSMHandler//控制期转结算期
+	SettlementPeriod2ControlHandler FSMHandler//结算期转控制期
+	SettlementPeriod2MatchHandler 	FSMHandler//结算期转匹配期
+	SettlementPeriod2VoidlHandler 	FSMHandler//结算期转空档期
 
 	// 计时相关
 	start_match_step   					int64 // 匹配开始时的帧
@@ -86,10 +89,52 @@ type Table struct {
 	collect_requested_white	int64	// 白方是否收藏本局：若收藏，则为白方userid；若不收藏，则为-1
 	collect_requested_black	int64	// 黑方是否收藏本局：若收藏，则为黑方userid；若不收藏，则为-1
 
+	// 游戏结束后的动作：-1:未选择; 1:再来一局;2:离开大厅
+	game_finished_action_white	int
+	game_finished_action_black	int
+
 	// 棋局记录相关
 	composition 			*stack.Stack	// 棋局栈
 	composition_num			int				// composition的个数，即总共走了多少步。这个在行棋完成期进行更新
 }
+
+// 数据初始化
+func (this *Table)initializeData(mode int) {
+	this.current_id = 0
+	this.withdraw_requested = 0
+	this.withdraw_agreed = -1
+	this.withdraw_timeout = 0
+	this.draw_requested = 0
+	this.draw_agreed = -1
+	this.draw_timeout = 0
+	this.lose_requested = -1
+
+	this.start_withdraw_step = -1
+	this.start_draw_step = -1
+	this.winner = -1
+	this.loser = -1
+	this.collect_requested_white = -1
+	this.collect_requested_black = -1
+	this.game_finished_action_white = -1
+	this.game_finished_action_black = -1
+	this.composition = stack.NewStack()
+	this.composition.Push(NewChess("00000000000000000000000000000011111111111111111111",
+		"11111111111111111111000000000000000000000000000000",
+		"00000000000000000000000000000000000000000000000000"))
+	this.composition_num = 1
+	if mode == 0 { // 结算期转控制期
+		this.start_match_step = -1
+		this.start_control_step = this.current_frame
+	} else if mode == 1 { // 结算期转匹配期
+		this.start_match_step = this.current_frame
+		this.start_control_step = -1
+	} else if mode == 2 { // 结算期转空挡期
+		this.start_match_step = -1
+		this.start_control_step = -1
+	}
+}
+
+
 
 func NewTable(module module.RPCModule, tableId int) *Table {
 	this := &Table{
@@ -115,6 +160,8 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 		loser:				-1,
 		collect_requested_white:	-1,
 		collect_requested_black:	-1,
+		game_finished_action_white:	-1,
+		game_finished_action_black:	-1,
 	}
 	this.BaseTableImpInit(tableId, this)
 	this.QueueInit()
@@ -136,6 +183,7 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 	//this.Register("StartGame", this.StartGame)
 	//this.Register("PauseGame", this.PauseGame)
 	//this.Register("Stake", this.Stake)
+
 	this.Register("Login", this.Login)
 
 	this.Register("PlayOneTurn", this.PlayOneTurn)
@@ -144,6 +192,9 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 	this.Register("Draw", this.Draw)
 	this.Register("DrawDecided", this.DrawDecided)
 	this.Register("Lose", this.Lose)
+	this.Register("Collect", this.Collect)
+	this.Register("Again", this.Again)
+	this.Register("Exit_", this.Exit_)
 
 
 	for indexSeat, _ := range this.seats {

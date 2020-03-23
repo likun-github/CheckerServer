@@ -284,3 +284,41 @@ func (self *Table) Collect(session gate.Session,  collect_checker_color int) err
 
 	return nil
 }
+
+// 某方再来一局
+func (self *Table) Again(session gate.Session,  collect_checker_color int) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
+	}
+
+	if collect_checker_color == 0 { // 白方再来一局
+		self.game_finished_action_white = 1
+	} else if collect_checker_color == 1 { // 黑方再来一局
+		self.game_finished_action_white = 1
+	}
+
+	return nil
+}
+
+// 某方返回大厅
+func (self *Table) Exit_(session gate.Session,  collect_checker_color int) error {
+	playerImp := self.GetBindPlayer(session)
+	if playerImp != nil {
+		player := playerImp.(*objects.Player)
+		player.OnRequest(session)
+		player.OnSitDown()
+		fmt.Println("绑定成功")
+	}
+
+	if collect_checker_color == 0 { // 白方返回大厅
+		self.game_finished_action_white = 2
+	} else if collect_checker_color == 1 { // 黑方返回大厅
+		self.game_finished_action_white = 2
+	}
+
+	return nil
+}

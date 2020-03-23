@@ -31,7 +31,6 @@ var (
 func (this *Table) InitFsm() {
 	this.fsm = *NewFSM(VoidPeriod)
 
-	//（空档期）進入匹配完成期
 	this.MatchPeriodHandler = FSMHandler(func() FSMState {
 		fmt.Println("空档期转匹配期")
 		this.start_match_step = this.current_frame
@@ -173,6 +172,31 @@ func (this *Table) InitFsm() {
 		return SettlementPeriod
 	})
 
+	this.SettlementPeriod2ControlHandler = FSMHandler(func() FSMState {
+		fmt.Println("结算期转控制期")
+		// 重置玩家相关的游戏数据
+		this.initializeData(0)
+		// 通知游戏开始
+		this.NotifyMatchFinish()
+		return ControlPeriod
+	})
+
+	this.SettlementPeriod2MatchHandler = FSMHandler(func() FSMState {
+		fmt.Println("结算期转匹配期")
+		// 重置所有数据
+		this.initializeData(1)
+		// 通知玩家开始匹配
+		this.NotifyStartMatching()
+		return MatchPeriod
+	})
+
+	this.SettlementPeriod2VoidlHandler = FSMHandler(func() FSMState {
+		fmt.Println("结算期转空挡期")
+		// 重置所有数据
+		this.initializeData(2)
+		return VoidPeriod
+	})
+
 	this.fsm.AddHandler(VoidPeriod, MatchPeriodEvent,this.MatchPeriodHandler)
 	this.fsm.AddHandler(MatchPeriod, ControlPeriodEvent,this.Match2ControlHandler)
 	this.fsm.AddHandler(ControlPeriod, WithdrawPeriodEvent,this.Control2WithdrawHandler)
@@ -183,6 +207,9 @@ func (this *Table) InitFsm() {
 	this.fsm.AddHandler(PlayFinishPeriod, ControlPeriodEvent,this.PlayFinish2ControlHandler)
 	this.fsm.AddHandler(ControlPeriod, SettlementPeriodEvent,this.SettlementPeriodHandler)
 	this.fsm.AddHandler(DrawPeriod, SettlementPeriodEvent,this.SettlementPeriodHandler)
+	this.fsm.AddHandler(SettlementPeriod, ControlPeriodEvent,this.SettlementPeriod2ControlHandler)
+	this.fsm.AddHandler(SettlementPeriod, MatchPeriodEvent,this.SettlementPeriod2MatchHandler)
+	this.fsm.AddHandler(SettlementPeriod, VoidPeriodEvent,this.SettlementPeriod2VoidlHandler)
 }
 
 // 这里的是循环动作，在不停地检测
@@ -273,6 +300,24 @@ func (this *Table) StateSwitch() {
 			this.NotifyCollectionResult(1,result)
 			this.collect_requested_black = -1
 		}
-
+		if this.game_finished_action_white + this.game_finished_action_black == 2 { // 黑白双方选择再来一局
+			this.fsm.Call(ControlPeriodEvent)
+		}
+		if this.game_finished_action_white + this.game_finished_action_black == 3 { // 一方选择再来一局，一方选择返回大厅
+			// 返回大厅方解绑
+			if this.game_finished_action_white == 2 { // 白方选择返回大厅
+				this.seats[0].OnUnBind()
+			} else if this.game_finished_action_black == 2 { // 黑方选择返回大厅
+				this.seats[1].OnUnBind()
+			}
+			this.fsm.Call(MatchPeriodEvent)
+		}
+		if this.game_finished_action_white + this.game_finished_action_black == 4 { // 黑白双方选择返回大厅
+			// 黑白双方解绑
+			for _, player := range this.seats {
+				player.OnUnBind()
+			}
+			this.fsm.Call(VoidPeriodEvent)
+		}
 	}
 }

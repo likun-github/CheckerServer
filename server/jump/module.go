@@ -71,7 +71,8 @@ func (self *Jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 	self.GetServer().RegisterGO("HD_DrawDecided", self.drawdecided)//和棋结果确定
 	self.GetServer().RegisterGO("HD_Lose", self.lose)//认输
 	self.GetServer().RegisterGO("HD_Collect", self.collect)//收藏
-
+	self.GetServer().RegisterGO("HD_Again", self.again)//再来一局
+	self.GetServer().RegisterGO("HD_Exit", self.exit)//再来一局
 }
 
 func (self *Jump) Run(closeSig chan bool) {
@@ -218,26 +219,7 @@ func (self *Jump) enter(session gate.Session, msg map[string]interface{}) (strin
 	return "", ""
 }
 
-// 将session跟BigRoomId解绑
-func (self *Jump) exit(session gate.Session, msg map[string]interface{}) (string, string) {
-	if BigRoomId, ok := msg["BigRoomId"]; !ok {
-		return "", "No BigRoomId found"
-	} else {
-		bigRoomId := BigRoomId.(string)
-		table, err := self.GetTableByBigRoomId(bigRoomId)
-		if err != nil {
-			return "", err.Error()
-		}
-		err = table.Exit(session)
-		if err == nil {
-			bigRoomId = room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId())
-			session.Set("BigRoomId", "") //设置到session
-			session.Push()
-			return bigRoomId, ""
-		}
-		return "", err.Error()
-	}
-}
+
 
 //player绑定
 func (self *Jump) login(session gate.Session, msg map[string]interface{}) (string, string) {
@@ -395,7 +377,7 @@ func (self *Jump) lose(session gate.Session, msg map[string]interface{}) (string
 // 收藏本局
 func (self *Jump) collect(session gate.Session, msg map[string]interface{}) (string, string) {
 	if collectCheckerColor, ok := msg["checker_color"]; !ok {
-		return "", "Who sent the lose request?! Tell me your checker color!"
+		return "", "Who sent the collect request?! Tell me your checker color!"
 	} else {
 		bigRoomId := session.Get("BigRoomId")
 		if bigRoomId == "" {
@@ -413,8 +395,56 @@ func (self *Jump) collect(session gate.Session, msg map[string]interface{}) (str
 		return "success", ""
 	}
 }
-
-
+// 再来一局
+func (self *Jump) again(session gate.Session, msg map[string]interface{}) (string, string) {
+	if collectCheckerColor, ok := msg["checker_color"]; !ok {
+		return "", "Who sent the again request?! Tell me your checker color!"
+	} else {
+		bigRoomId := session.Get("BigRoomId")
+		if bigRoomId == "" {
+			return "", "fail"
+		}
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		collect_checker_color := int(collectCheckerColor.(float64))
+		err = table.PutQueue("Again", session,collect_checker_color)
+		if err != nil {
+			return "", err.Error()
+		}
+		return "success", ""
+	}
+}
+// 返回大厅
+func (self *Jump) exit(session gate.Session, msg map[string]interface{}) (string, string) {
+	if BigRoomId, ok := msg["BigRoomId"]; !ok {
+		return "", "No BigRoomId found"
+	} else if collectCheckerColor, ok := msg["checker_color"]; !ok {
+		return "", "Who sent the exit request?! Tell me your checker color!"
+	} else {
+		// 先修改用户状态
+		bigRoomId := BigRoomId.(string)
+		table, err := self.GetTableByBigRoomId(bigRoomId)
+		if err != nil {
+			return "", err.Error()
+		}
+		collect_checker_color := int(collectCheckerColor.(float64))
+		err = table.PutQueue("Exit_", session,collect_checker_color)
+		if err != nil {
+			return "", err.Error()
+		}
+		// 在将session与table解绑
+		err = table.Exit(session)
+		if err == nil {
+			bigRoomId = room.BuildBigRoomId(self.GetFullServerId(), table.TableId(), table.TransactionId())
+			session.Set("BigRoomId", "") //设置到session
+			session.Push()
+			return bigRoomId, ""
+		}
+		return "", err.Error()
+	}
+}
 
 
 
