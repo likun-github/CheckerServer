@@ -3,7 +3,6 @@ package dao
 import (
 	"CheckerServer/server/database"
 	"CheckerServer/server/model"
-	"errors"
 	"github.com/liangdas/mqant/log"
 )
 
@@ -73,19 +72,14 @@ func (this *UserInfoDao)InsertUserInfo(users []model.UserInfo) bool{
 
 func (this *UserInfoDao)ModifyScoreNLevel(id int64, score int64, level int8) error{
 	u := new(model.UserInfo)
-	has, err := this.Engine.Id(id).Get(u)
-	if err!=nil{
-		log.Error("select user id=%d error", id)
-		return err
-	}
-	if !has {
-		log.Info("user id = %d not exist", id)
-		return errors.New("user id not exist")
-	}
 	u.Score = score
 	u.Level = level
-	if !this.Update(u){
-		return errors.New("update score and level failed")
+	_, err := this.Engine.Id(id).Update(u)
+
+	if err!=nil{
+		log.Error("update score and level failed", id)
+		return err
 	}
+
 	return nil
 }
