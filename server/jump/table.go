@@ -118,7 +118,7 @@ func (this *Table)initializeData(mode int) {
 	this.game_finished_action_white = -1
 	this.game_finished_action_black = -1
 	this.composition = stack.NewStack()
-	this.composition.Push(NewChess("00000000000000000000000000000011111111111111111111",
+	this.composition.Push(objects.NewChess("00000000000000000000000000000011111111111111111111",
 		"11111111111111111111000000000000000000000000000000",
 		"00000000000000000000000000000000000000000000000000"))
 	this.composition_num = 1
@@ -173,7 +173,7 @@ func NewTable(module module.RPCModule, tableId int) *Table {
 	this.seats = make([]*objects.Player, this.seatMax)
 	this.viewer = list.New()
 	this.composition = stack.NewStack()
-	this.composition.Push(NewChess("00000000000000000000000000000011111111111111111111",
+	this.composition.Push(objects.NewChess("00000000000000000000000000000011111111111111111111",
 		                           "11111111111111111111000000000000000000000000000000",
 		                            "00000000000000000000000000000000000000000000000000"))
 	this.composition_num = 1

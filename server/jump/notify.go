@@ -1,6 +1,7 @@
 package jump
 
 import (
+	"CheckerServer/server/jump/objects"
 	"encoding/json"
 )
 
@@ -78,9 +79,9 @@ func (self *Table) NotifyMatchFinish() {
 */
 func (self *Table) NotifyUpdateComposition() {
 	new_composition := map[string]interface{} {
-		"W": self.composition.Top().(*Chess).White,
-		"B": self.composition.Top().(*Chess).black,
-		"K": self.composition.Top().(*Chess).king,
+		"W": self.composition.Top().(*objects.Chess).White,
+		"B": self.composition.Top().(*objects.Chess).Black,
+		"K": self.composition.Top().(*objects.Chess).King,
 	}
 	new_composition_json,_ := json.Marshal(new_composition)
 	self.seats[self.currentPlayer].Session().Send("UpdateComposition", new_composition_json)

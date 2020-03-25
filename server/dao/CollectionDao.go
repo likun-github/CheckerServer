@@ -3,9 +3,9 @@ package dao
 import (
 	"CheckerServer/server/common/stack"
 	"CheckerServer/server/database"
+	"CheckerServer/server/jump/objects"
 	"CheckerServer/server/model"
 	"github.com/liangdas/mqant/log"
-	"CheckerServer/server/jump"
 	"strconv"
 )
 
@@ -27,9 +27,9 @@ func (this *CollectionDao)InsertCollection(userid int64, step int8, composition 
 	var king []int64
 	for i := 0; i<composition.Size(); i++ {
 		comp := composition.Get(i)
-		w,_ := strconv.ParseInt(comp.(*jump.Chess).White, 2, 64)
-		b,_ := strconv.ParseInt(comp.(*jump.Chess).White, 2, 64)
-		k,_ := strconv.ParseInt(comp.(*jump.Chess).White, 2, 64)
+		w,_ := strconv.ParseInt(comp.(*objects.Chess).White, 2, 64)
+		b,_ := strconv.ParseInt(comp.(*objects.Chess).Black, 2, 64)
+		k,_ := strconv.ParseInt(comp.(*objects.Chess).King, 2, 64)
 		white=append(white,w)
 		black=append(white,b)
 		king=append(white,k)

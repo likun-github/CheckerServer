@@ -17,13 +17,13 @@ package jump
 // limitations under the License.
 
 import (
+	"CheckerServer/server/common/moveGeneration"
 	"CheckerServer/server/jump/objects"
 	"errors"
 	"fmt"
 	"github.com/liangdas/mqant-modules/room"
 	"github.com/liangdas/mqant/gate"
 	"strconv"
-	"CheckerServer/server/common/moveGeneration"
 )
 //坐下
 /*
@@ -157,7 +157,7 @@ func (self *Table) Login(session gate.Session, userid int64, level int8, score i
 
 
 // 控制方走子完成
-func (self *Table) PlayOneTurn(session gate.Session, composition *Chess) error {
+func (self *Table) PlayOneTurn(session gate.Session, composition *objects.Chess) error {
 	playerImp := self.GetBindPlayer(session)
 	if playerImp != nil {
 		player := playerImp.(*objects.Player)
@@ -173,8 +173,8 @@ func (self *Table) PlayOneTurn(session gate.Session, composition *Chess) error {
 	// 判断游戏是否结束
 	// 初始化bitboard
 	W,_ := strconv.ParseInt(composition.White, 2, 64)
-	B,_ := strconv.ParseInt(composition.black, 2, 64)
-	K,_ := strconv.ParseInt(composition.king, 2, 64)
+	B,_ := strconv.ParseInt(composition.Black, 2, 64)
+	K,_ := strconv.ParseInt(composition.King, 2, 64)
 	var cb = &moveGeneration.CheckerBitboard{W:uint64(W),B:uint64(B),K:uint64(K)}
 	// 初始化padded array board
 	moveGeneration.BitboardToPaddedArrayBoard(cb)

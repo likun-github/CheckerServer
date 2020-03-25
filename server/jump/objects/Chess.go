@@ -1,15 +1,15 @@
-package jump
+package objects
 
 type Chess struct {
 	//number int
 	White string
-	black string
-	king  string
+	Black string
+	King  string
 }
 func NewChess(white string,black string,king string)  *Chess{
 	p:=&Chess{}
 	p.White =white
-	p.black=black
-	p.king=king
+	p.Black=black
+	p.King=king
 	return p
 }

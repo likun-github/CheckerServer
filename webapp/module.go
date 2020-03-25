@@ -181,15 +181,12 @@ func UpdateUserNameNAvatarHandler (writer http.ResponseWriter, request *http.Req
 	avatar:=query["avatar"][0]
 	// 根据userid查找相应的用户
 	infoDao:=dao.NewUserInfoDao()
-	userInfo := infoDao.SelectById(int64(userid))
-	// 更新微信名及头像
-	userInfo.WxName=name
-	userInfo.WXImg=avatar
-	affected, err := engine.Id(id).Cols("age").Update(&user)
-	if !infoDao.Update(userInfo){
+	err := infoDao.UpdateNameNAvatar(int64(userid), name, avatar)
+
+	if err != nil{
 		log.Info("db error")
 	}
-	u:=&UserInfoJson{Id:userInfo.Id,Name:userInfo.Name,WxName:userInfo.WxName,WXImg:userInfo.WXImg,Status:userInfo.Status,Score:userInfo.Score,Level:userInfo.Level}
+	u:=&UserInfoJson{Id:int64(userid),WxName:name,WXImg:avatar}
 	j,_:=json.Marshal(u)
 	fmt.Fprintf(writer, string(j))
 }

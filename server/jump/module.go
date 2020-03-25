@@ -2,6 +2,7 @@ package jump
 
 import (
 	"CheckerServer/server/dao"
+	"CheckerServer/server/jump/objects"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -259,7 +260,7 @@ func (self *Jump) control(session gate.Session, msg map[string]interface{}) (str
 //		W,_ :=strconv.ParseInt(msg["W"].(string),10, 64)
 //		B,_ :=strconv.ParseInt(msg["B"].(string),10, 64)
 //		K,_ :=strconv.ParseInt(msg["K"].(string),10, 64)
-		composition := NewChess(msg["W"].(string), msg["B"].(string), msg["K"].(string))
+		composition := objects.NewChess(msg["W"].(string), msg["B"].(string), msg["K"].(string))
 		bigRoomId := session.Get("BigRoomId")
 		if bigRoomId == "" {
 			return "", "fail"
