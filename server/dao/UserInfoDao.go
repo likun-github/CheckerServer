@@ -85,17 +85,14 @@ func (this *UserInfoDao)ModifyScoreNLevel(id int64, score int64, level int8) err
 }
 
 func (this *UserInfoDao)UpdateNameNAvatar(id int64, name string, avatar string) error{
-	ui := new(model.UserInfo)
-	ui.WxName = name
-	ui.WXImg = avatar
-
-	_, err := this.Engine.Id(id).Cols("WxName").Update(&ui)
+	_, err := this.Engine.Id(id).Update(&model.UserInfo{WxName:name})
 	if err!=nil{
 		log.Error("Update name failed", id)
 		return err
 	}
 
-	_, err = this.Engine.Id(id).Cols("WXImg").Update(&ui)
+	_, err = this.Engine.Id(id).Update(&model.UserInfo{WXImg:avatar})
+	//_, err = this.Engine.Id(id).Cols("WXImg").Update(&ui)
 	if err!=nil{
 		log.Error("Update avatar failed", id)
 		return err
