@@ -71,13 +71,15 @@ func (this *UserInfoDao)InsertUserInfo(users []model.UserInfo) bool{
 }
 
 func (this *UserInfoDao)ModifyScoreNLevel(id int64, score int64, level int8) error{
-	u := new(model.UserInfo)
-	u.Score = score
-	u.Level = level
-	_, err := this.Engine.Id(id).Update(u)
-
+	_, err := this.Engine.Id(id).Update(&model.UserInfo{Score:score})
 	if err!=nil{
-		log.Error("update score and level failed", id)
+		log.Error("Update score failed", id)
+		return err
+	}
+
+	_, err = this.Engine.Id(id).Update(&model.UserInfo{Level:level})
+	if err!=nil{
+		log.Error("Update level failed", id)
 		return err
 	}
 
@@ -92,7 +94,6 @@ func (this *UserInfoDao)UpdateNameNAvatar(id int64, name string, avatar string) 
 	}
 
 	_, err = this.Engine.Id(id).Update(&model.UserInfo{WXImg:avatar})
-	//_, err = this.Engine.Id(id).Cols("WXImg").Update(&ui)
 	if err!=nil{
 		log.Error("Update avatar failed", id)
 		return err
