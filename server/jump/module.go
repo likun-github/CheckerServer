@@ -58,7 +58,6 @@ func (self *Jump) OnInit(app module.App, settings *conf.ModuleSettings) {
 
 	self.GetServer().RegisterGO("HD_GetUsableTable", self.HDGetUsableTable)		//我们约定所有对客户端的请求都以Handler_开头
 	//self.GetServer().RegisterGO("HD_Enter", self.enter)
-	self.GetServer().RegisterGO("HD_Exit", self.exit)
 	//self.GetServer().RegisterGO("HD_SitDown", self.sitdown)
 	//self.GetServer().RegisterGO("HD_StartGame", self.startGame)
 	//self.GetServer().RegisterGO("HD_PauseGame", self.pauseGame)
