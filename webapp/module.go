@@ -185,6 +185,7 @@ func UpdateUserNameNAvatarHandler (writer http.ResponseWriter, request *http.Req
 	// 更新微信名及头像
 	userInfo.WxName=name
 	userInfo.WXImg=avatar
+	affected, err := engine.Id(id).Cols("age").Update(&user)
 	if !infoDao.Update(userInfo){
 		log.Info("db error")
 	}
