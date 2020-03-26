@@ -298,7 +298,7 @@ func (self *Table) Again(session gate.Session,  collect_checker_color int) error
 	if collect_checker_color == 0 { // 白方再来一局
 		self.game_finished_action_white = 1
 	} else if collect_checker_color == 1 { // 黑方再来一局
-		self.game_finished_action_white = 1
+		self.game_finished_action_black = 1
 	}
 
 	return nil

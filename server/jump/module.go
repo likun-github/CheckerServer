@@ -397,7 +397,7 @@ func (self *Jump) collect(session gate.Session, msg map[string]interface{}) (str
 }
 // 再来一局
 func (self *Jump) again(session gate.Session, msg map[string]interface{}) (string, string) {
-	if collectCheckerColor, ok := msg["checker_color"]; !ok {
+	if againCheckerColor, ok := msg["checker_color"]; !ok {
 		return "", "Who sent the again request?! Tell me your checker color!"
 	} else {
 		bigRoomId := session.Get("BigRoomId")
@@ -408,8 +408,8 @@ func (self *Jump) again(session gate.Session, msg map[string]interface{}) (strin
 		if err != nil {
 			return "", err.Error()
 		}
-		collect_checker_color := int(collectCheckerColor.(float64))
-		err = table.PutQueue("Again", session,collect_checker_color)
+		again_checker_color := int(againCheckerColor.(float64))
+		err = table.PutQueue("Again", session,again_checker_color)
 		if err != nil {
 			return "", err.Error()
 		}
